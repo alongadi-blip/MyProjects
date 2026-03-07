@@ -330,6 +330,12 @@
         <button class="icon-btn" onclick="openBrowse()" title="עיון לפי קטגוריה">📂</button>
         <button class="icon-btn" onclick="openLists()" title="הרשימות שלי">📋</button>
         <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="מצב כהה/בהיר">🌙</button>
+        <button class="icon-btn" onclick="shareWhatsApp()" title="שתף בוואטסאפ" style="padding:4px;line-height:1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22">
+            <circle cx="24" cy="24" r="24" fill="#25D366"/>
+            <path fill="white" d="M34.5 13.5A14.8 14.8 0 0 0 24 9C15.7 9 9 15.7 9 24c0 2.6.7 5.2 2 7.4L9 39l7.8-2c2.1 1.1 4.5 1.7 6.9 1.7h.1c8.3 0 15-6.7 15-15 0-4-.5-7.7-4.3-10.2zM24 37.5c-2.2 0-4.4-.6-6.3-1.7l-.5-.3-4.6 1.2 1.2-4.5-.3-.5A12.4 12.4 0 0 1 11.5 24C11.5 17.1 17.1 11.5 24 11.5c3.3 0 6.4 1.3 8.7 3.6S36 20.7 36 24c0 6.9-5.6 13.5-12 13.5zm6.8-9.3c-.4-.2-2.2-1.1-2.6-1.2-.4-.1-.6-.2-.9.2-.3.4-1 1.2-1.2 1.4-.2.2-.4.3-.8.1-.4-.2-1.6-.6-3-1.9-1.1-1-1.8-2.2-2.1-2.6-.2-.4 0-.6.2-.8l.6-.7c.2-.2.2-.4.4-.6.1-.2.1-.4 0-.6-.1-.2-.9-2.1-1.2-2.9-.3-.8-.6-.7-.9-.7h-.7c-.3 0-.7.1-1 .4-.4.4-1.4 1.3-1.4 3.2s1.4 3.7 1.6 4c.2.2 2.8 4.3 6.8 6 .9.4 1.7.6 2.3.8.9.3 1.8.2 2.5.1.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.6.2-1.8-.1-.2-.4-.3-.8-.5z"/>
+          </svg>
+        </button>
         <button class="icon-btn" onclick="shareList()" title="שתף רשימה">📤</button>
       </div>
     </div>
@@ -1544,6 +1550,13 @@ function shareList() {
   if (navigator.share) navigator.share({ title: (listName || 'רשימת קניות') + ' | SmartShop', url });
   else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => toast('🔗 הקישור הועתק!'));
   else prompt('העתק את הקישור לשיתוף:', url);
+}
+
+function shareWhatsApp() {
+  const url = location.href;
+  const name = listName || 'רשימת קניות';
+  const text = encodeURIComponent(name + ' | SmartShop\n' + url);
+  window.open('https://wa.me/?text=' + text, '_blank');
 }
 
 // ============================================================

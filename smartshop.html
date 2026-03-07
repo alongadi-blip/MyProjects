@@ -266,10 +266,8 @@
     #scanModal { background: var(--surface); border-radius: 16px; width: min(96vw, 460px); max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.35); }
     #scanVideoWrap { position: relative; background: #000; flex-shrink: 0; }
     #scanVideo { width: 100%; display: block; max-height: 260px; object-fit: cover; }
-    #scanLine { position: absolute; left: 10%; right: 10%; height: 2px; background: #e53935; top: 50%; box-shadow: 0 0 8px #e53935; animation: scanMove 1.8s ease-in-out infinite; }
-    @keyframes scanMove { 0%,100%{ top:20%; } 50%{ top:80%; } }
-    #scanViewfinder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
-    #scanViewfinder::before { content:''; display:block; width:65%; padding-top:40%; border:2px solid rgba(255,255,255,0.6); border-radius:8px; }
+    #scanCaptureBtn { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: white; color: #222; border: none; border-radius: 50px; padding: 10px 28px; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 2px 12px rgba(0,0,0,0.4); white-space: nowrap; }
+    #scanCaptureBtn:active { transform: translateX(-50%) scale(0.95); }
     #scanBody { padding: 14px 16px; }
     #scanStatus { text-align: center; font-size: 0.88rem; color: var(--text-muted); min-height: 1.4em; margin-bottom: 10px; }
     #scanResult { background: var(--surface2); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
@@ -523,8 +521,7 @@
     </div>
     <div id="scanVideoWrap">
       <video id="scanVideo" autoplay muted playsinline></video>
-      <div id="scanLine"></div>
-      <div id="scanViewfinder"></div>
+      <button id="scanCaptureBtn" onclick="captureAndDecode()">📸 צלם וסרוק</button>
     </div>
     <div id="scanBody">
       <div id="scanStatus">מאתחל…</div>
@@ -1639,84 +1636,84 @@ function applyDark(on) {
 // ============================================================
 //  BARCODE SCAN
 // ============================================================
-let _zxingReader  = null;
-let _scanStream   = null;
-let _scanActive   = false;
-let _scanRaf      = null;
-let _scanLastTs   = 0;
+let _scanStream = null;
 
 async function openScan() {
   document.getElementById('scanOverlay').classList.add('open');
   document.getElementById('scanResult').style.display = 'none';
-  setStatus('טוען ספריית סריקה…');
-  if (!window.ZXing) {
-    try {
-      await loadScript('https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js');
-    } catch(e) {
-      setStatus('❌ לא ניתן לטעון ספריית סריקה — בדוק חיבור לאינטרנט');
-      return;
-    }
-  }
-  startScanner();
-}
-
-function closeScan() {
-  stopScanner();
-  document.getElementById('scanOverlay').classList.remove('open');
-}
-
-async function startScanner() {
+  document.getElementById('scanCaptureBtn').style.display = '';
   setStatus('מאתחל מצלמה…');
-  const videoEl = document.getElementById('scanVideo');
+  const video = document.getElementById('scanVideo');
   try {
     _scanStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } }
     });
-    videoEl.srcObject = _scanStream;
-    await videoEl.play();
-    _zxingReader = new ZXing.BrowserMultiFormatReader();
-    _scanActive  = true;
-    _scanLastTs  = 0;
-    setStatus('מכוון את הברקוד לתוך המסגרת…');
-    requestAnimationFrame(_scanTick);
+    video.srcObject = _scanStream;
+    await video.play();
+    setStatus('מכוון את הברקוד ולחץ צלם');
   } catch(e) {
     setStatus('❌ לא ניתן לגשת למצלמה — אפשר גישה בהגדרות הדפדפן');
   }
 }
 
-function _scanTick(ts) {
-  if (!_scanActive) return;
-  _scanRaf = requestAnimationFrame(_scanTick);
-  if (ts - _scanLastTs < 300) return;   // ~3 fps — מספיק לסריקה
-  _scanLastTs = ts;
-  const videoEl = document.getElementById('scanVideo');
-  if (!videoEl || videoEl.readyState < 2 || !videoEl.videoWidth) return;
-  const canvas = document.createElement('canvas');
-  canvas.width  = videoEl.videoWidth;
-  canvas.height = videoEl.videoHeight;
-  canvas.getContext('2d').drawImage(videoEl, 0, 0);
-  try {
-    const result = _zxingReader.decodeFromCanvas(canvas);
-    if (result) {
-      _scanActive = false;
-      cancelAnimationFrame(_scanRaf);
-      onBarcodeDetected(result.getText());
-    }
-  } catch(e) { /* NotFoundException — ממשיך */ }
+function closeScan() {
+  stopScanStream();
+  document.getElementById('scanOverlay').classList.remove('open');
 }
 
-function stopScanner() {
-  _scanActive = false;
-  if (_scanRaf)    { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+function stopScanStream() {
   if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
-  _zxingReader = null;
   const v = document.getElementById('scanVideo');
   if (v) v.srcObject = null;
 }
 
+async function captureAndDecode() {
+  const video = document.getElementById('scanVideo');
+  if (!video.videoWidth) { setStatus('המצלמה עדיין לא מוכנה…'); return; }
+  document.getElementById('scanCaptureBtn').style.display = 'none';
+  setStatus('מנתח תמונה…');
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+
+  let decoded = null;
+
+  // 1. BarcodeDetector נייטיב — Chrome/Edge/Android
+  if ('BarcodeDetector' in window) {
+    try {
+      const det = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','qr_code','itf'] });
+      const res = await det.detect(canvas);
+      if (res.length) decoded = res[0].rawValue;
+    } catch(e) {}
+  }
+
+  // 2. ZXing fallback
+  if (!decoded) {
+    if (!window.ZXing) {
+      try { await loadScript('https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js'); } catch(e) {}
+    }
+    if (window.ZXing) {
+      try {
+        const reader = new ZXing.BrowserMultiFormatReader();
+        const result = reader.decodeFromCanvas(canvas);
+        decoded = result.getText();
+      } catch(e) {}
+    }
+  }
+
+  if (decoded) {
+    stopScanStream();
+    onBarcodeDetected(decoded);
+  } else {
+    setStatus('לא זוהה ברקוד — תאורה טובה ומרחק 10-20 ס"מ');
+    document.getElementById('scanCaptureBtn').style.display = '';
+  }
+}
+
 async function onBarcodeDetected(code) {
-  stopScanner();
-  setStatus('קוד נסרק: ' + code + ' — מחפש מוצר…');
+  setStatus('קוד: ' + code + ' — מחפש מוצר…');
   try {
     const resp = await fetch('https://world.openfoodfacts.org/api/v0/product/' + code + '.json');
     const data = await resp.json();
@@ -1752,8 +1749,9 @@ function addScannedProduct() {
 
 function scanAgain() {
   document.getElementById('scanResult').style.display = 'none';
-  stopScanner();
-  startScanner();
+  document.getElementById('scanCaptureBtn').style.display = '';
+  setStatus('מכוון את הברקוד ולחץ צלם');
+  if (!_scanStream) openScan();
 }
 
 function setStatus(msg) {
@@ -1808,7 +1806,7 @@ function esc(s) { return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\
 //  KEYBOARD
 // ============================================================
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeAdd(); closeEdit(); closeSearch(); closeBrowse(); closeLists(); }
+  if (e.key === 'Escape') { closeAdd(); closeEdit(); closeSearch(); closeBrowse(); closeLists(); closeScan(); }
 });
 document.getElementById('addOverlay').addEventListener('keydown',  e => { if (e.key === 'Enter') submitAdd(); });
 document.getElementById('editOverlay').addEventListener('keydown', e => { if (e.key === 'Enter') submitEdit(); });
@@ -1816,7 +1814,7 @@ document.getElementById('addOverlay').addEventListener('click',   e => { if (e.t
 document.getElementById('editOverlay').addEventListener('click',  e => { if (e.target === document.getElementById('editOverlay'))  closeEdit(); });
 document.getElementById('browseOverlay').addEventListener('click', e => { if (e.target === document.getElementById('browseOverlay')) closeBrowse(); });
 document.getElementById('listsOverlay').addEventListener('click',  e => { if (e.target === document.getElementById('listsOverlay'))  closeLists(); });
-document.getElementById('scanOverlay').addEventListener('click',   e => { if (e.target === document.getElementById('scanOverlay'))   closeScan(); });
+document.getElementById('scanOverlay').addEventListener('click', e => { if (e.target === document.getElementById('scanOverlay')) closeScan(); });
 
 // ============================================================
 //  START

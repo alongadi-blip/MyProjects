@@ -1099,9 +1099,14 @@ function renderBrowseProducts() {
     const btn = added
       ? `<button class="bprod-add added" disabled title="כבר ברשימה">✓</button>`
       : `<button class="bprod-add" onclick="browseAdd(${idx})" title="הוסף לרשימה">+</button>`;
+    const imgUrl = prodImgUrl(name, browseCat);
+    const photoEl = imgUrl
+      ? `<img class="item-photo" src="${hEsc(imgUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : (prodEmoji(name) ? `<span class="item-emoji" style="font-size:1.3rem">${prodEmoji(name)}</span>` : '');
     return `<div class="bprod-item">
-      <span class="bprod-name">${hEsc(name)}</span>
       ${btn}
+      ${photoEl}
+      <span class="bprod-name">${hEsc(name)}</span>
     </div>`;
   }).join('');
 }

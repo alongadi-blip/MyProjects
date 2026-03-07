@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>חידון דגלים ובירות</title>
+  <script src="https://cdn.jsdelivr.net/npm/twemoji@14.0.2/dist/twemoji.min.js" crossorigin="anonymous"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;800;900&display=swap');
+
+    :root {
+      --easy:   #22c55e;
+      --medium: #f59e0b;
+      --hard:   #ef4444;
+      --glass:  rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.12);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Heebo', 'Segoe UI', Arial, sans-serif;
+      background: #0a0a14;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: #fff;
+    }
+
+    /* ─── Animated background ─── */
+    .bg {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden;
+    }
+    .bg-blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(90px); opacity: 0.18; animation: drift 18s ease-in-out infinite;
+    }
+    .bg-blob:nth-child(1){ width:520px;height:520px;background:#6366f1;top:-120px;right:-80px;animation-delay:0s; }
+    .bg-blob:nth-child(2){ width:420px;height:420px;background:#0ea5e9;bottom:-100px;left:-80px;animation-delay:-6s; }
+    .bg-blob:nth-child(3){ width:300px;height:300px;background:#a855f7;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:-12s; }
+    @keyframes drift {
+      0%,100%{ transform:translate(0,0) scale(1); }
+      33%    { transform:translate(30px,-30px) scale(1.08); }
+      66%    { transform:translate(-20px,20px) scale(0.95); }
+    }
+
+    /* ─── Wrapper ─── */
+    .wrap {
+      position: relative; z-index: 1;
+      width: 100%; max-width: 640px; padding: 20px;
+    }
+
+    /* ─── Screens ─── */
+    .screen { display: none; animation: fadeUp 0.5s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(24px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ─── Card ─── */
+    .card {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 36px;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    /* ══════════ MENU SCREEN ══════════ */
+    .menu-header { text-align: center; margin-bottom: 36px; }
+    .game-icon   { font-size: 3.5rem; display: block; margin-bottom: 12px; }
+    .game-title  {
+      font-size: 2.2rem; font-weight: 900; letter-spacing: -1px;
+      background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .game-sub    { color: rgba(255,255,255,0.5); font-size: 0.95rem; margin-top: 6px; }
+
+    .diff-label  { font-size: 0.85rem; color: rgba(255,255,255,0.4); text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+    .diff-grid   { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 28px; }
+
+    .diff-btn {
+      border: 2px solid transparent; border-radius: 18px; padding: 22px 10px 18px;
+      cursor: pointer; background: rgba(255,255,255,0.05);
+      color: #fff; font-family: inherit; font-size: 1rem; font-weight: 700;
+      transition: all 0.25s; text-align: center; position: relative; overflow: hidden;
+    }
+    .diff-btn::before {
+      content:''; position:absolute; inset:0; opacity:0; transition:opacity 0.25s;
+    }
+    .diff-btn.easy   { border-color: rgba(34,197,94,0.4); }
+    .diff-btn.medium { border-color: rgba(245,158,11,0.4); }
+    .diff-btn.hard   { border-color: rgba(239,68,68,0.4); }
+    .diff-btn.easy::before   { background: radial-gradient(circle at 50% 0%, rgba(34,197,94,0.2), transparent 70%); }
+    .diff-btn.medium::before { background: radial-gradient(circle at 50% 0%, rgba(245,158,11,0.2), transparent 70%); }
+    .diff-btn.hard::before   { background: radial-gradient(circle at 50% 0%, rgba(239,68,68,0.2), transparent 70%); }
+    .diff-btn:hover::before, .diff-btn.sel::before { opacity:1; }
+    .diff-btn:hover { transform:translateY(-4px); }
+    .diff-btn.easy.sel   { border-color:var(--easy);   box-shadow:0 0 24px rgba(34,197,94,0.4); }
+    .diff-btn.medium.sel { border-color:var(--medium); box-shadow:0 0 24px rgba(245,158,11,0.4); }
+    .diff-btn.hard.sel   { border-color:var(--hard);   box-shadow:0 0 24px rgba(239,68,68,0.4); }
+    .diff-btn.sel { transform:translateY(-4px) scale(1.03); }
+
+    .diff-dot  { font-size:2rem; display:block; margin-bottom:8px; }
+    .diff-name { display:block; font-size:1.05rem; font-weight:800; }
+    .diff-desc { display:block; font-size:0.73rem; color:rgba(255,255,255,0.45); margin-top:6px; font-weight:400; line-height:1.4; }
+
+    .start-btn {
+      width: 100%; padding: 18px; border: none; border-radius: 16px; cursor: pointer;
+      font-family: inherit; font-size: 1.15rem; font-weight: 800; color: #fff;
+      background: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+      background-size: 200% 200%; animation: shimmer 3s ease infinite;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: 0 8px 32px rgba(99,102,241,0.45);
+      letter-spacing: 0.5px;
+    }
+    .start-btn:disabled { opacity:0.35; cursor:not-allowed; transform:none!important; animation:none; }
+    .start-btn:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 14px 40px rgba(99,102,241,0.55); }
+    @keyframes shimmer {
+      0%,100%{ background-position:0% 50%; }
+      50%    { background-position:100% 50%; }
+    }
+
+    /* ══════════ GAME SCREEN ══════════ */
+    .game-header {
+      display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;
+    }
+    .score-pill {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 40px; padding: 8px 20px; font-size: 1rem; font-weight: 700;
+    }
+    .score-pill span { color: #fbbf24; }
+    .prog-pill {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 40px; padding: 8px 20px; font-size: 0.9rem; color: rgba(255,255,255,0.6);
+    }
+    .prog-pill strong { color: #fff; }
+
+    /* Timer */
+    .timer-wrap { margin-bottom: 20px; }
+    .timer-track {
+      height: 8px; background: rgba(255,255,255,0.08); border-radius: 8px; overflow: hidden; margin-bottom: 6px;
+    }
+    .timer-fill {
+      height: 100%; border-radius: 8px;
+      background: linear-gradient(90deg, #22c55e, #84cc16);
+      transition: width 0.95s linear, background 0.5s;
+    }
+    .timer-fill.warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .timer-fill.crit { background: linear-gradient(90deg, #ef4444, #f97316); animation: pulse-bar 0.5s ease infinite alternate; }
+    @keyframes pulse-bar { to { opacity:0.7; } }
+    .timer-num {
+      text-align: center; font-size: 1.25rem; font-weight: 700; color: rgba(255,255,255,0.8);
+      transition: color 0.3s;
+    }
+    .timer-num.crit { color: #f87171; }
+
+    /* Question card */
+    .q-card { text-align: center; margin-bottom: 20px; }
+    .q-type-badge {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px;
+      border-radius: 20px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.5px;
+      margin-bottom: 18px;
+    }
+    .badge-flag    { background:rgba(129,140,248,0.2); border:1px solid rgba(129,140,248,0.4); color:#a5b4fc; }
+    .badge-capital { background:rgba(251,191,36,0.2);  border:1px solid rgba(251,191,36,0.4);  color:#fcd34d; }
+
+    .flag-area {
+      font-size: 82px; line-height: 1; margin: 8px 0 20px;
+      min-height: 96px; display: flex; align-items: center; justify-content: center;
+    }
+    .flag-area img.emoji { width: 96px; height: 96px; }
+
+    .q-text {
+      font-size: 1.25rem; font-weight: 600; line-height: 1.5;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* Options */
+    .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .opt-btn {
+      padding: 18px 14px; border-radius: 16px; border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06); color: #fff; font-family: inherit;
+      font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .opt-btn::after {
+      content:''; position:absolute; inset:0; background:white; opacity:0; transition:opacity 0.15s;
+    }
+    .opt-btn:hover:not(:disabled)::after { opacity:0.06; }
+    .opt-btn:hover:not(:disabled) { border-color:rgba(255,255,255,0.35); transform:translateY(-2px); }
+    .opt-btn:disabled { cursor:default; transform:none!important; }
+
+    .opt-btn.correct {
+      background: rgba(34,197,94,0.2); border-color: #22c55e; color: #86efac;
+      animation: pop 0.3s ease;
+      position: relative;
+    }
+    .pts-flash {
+      position: absolute;
+      top: -14px; left: 50%; transform: translateX(-50%);
+      font-size: 1.1rem; font-weight: 900; color: #fbbf24;
+      pointer-events: none;
+      animation: pts-rise 1.2s ease forwards;
+    }
+    @keyframes pts-rise {
+      0%   { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-36px); }
+    }
+    .opt-btn.wrong   { background: rgba(239,68,68,0.2);  border-color: #ef4444; color: #fca5a5; }
+    .opt-btn.show-c  { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.5); color: #86efac; }
+
+    @keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+
+    /* ══════════ RESULTS SCREEN ══════════ */
+    .res-card { text-align: center; }
+    .res-emoji { font-size: 3.5rem; margin-bottom: 10px; }
+    .res-title { font-size: 2rem; font-weight: 900; margin-bottom: 6px; }
+    .res-sub   { color: rgba(255,255,255,0.5); font-size: 0.95rem; margin-bottom: 28px; }
+
+    .donut-wrap { position: relative; width: 160px; height: 160px; margin: 0 auto 28px; }
+    .donut-svg  { transform: rotate(-90deg); }
+    .donut-bg   { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 14; }
+    .donut-arc  { fill: none; stroke-width: 14; stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1); }
+    .donut-text {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+    }
+    .donut-score { font-size: 2.4rem; font-weight: 900; line-height: 1; }
+    .donut-of    { font-size: 0.8rem; color: rgba(255,255,255,0.4); }
+
+    .stats-row   { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 28px; }
+    .stat-box    { background: rgba(255,255,255,0.06); border:1px solid var(--border); border-radius:16px; padding:16px 10px; }
+    .stat-val    { font-size: 1.7rem; font-weight: 800; }
+    .stat-lbl    { font-size: 0.75rem; color: rgba(255,255,255,0.45); margin-top: 4px; }
+
+    .res-btns    { display: flex; gap: 12px; }
+    .btn-replay  {
+      flex: 1; padding: 16px; border: none; border-radius: 14px; cursor: pointer;
+      font-family: inherit; font-size: 1rem; font-weight: 700; color: #fff;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      box-shadow: 0 6px 24px rgba(34,197,94,0.35); transition: all 0.2s;
+    }
+    .btn-menu    {
+      flex: 1; padding: 16px; border: 1.5px solid rgba(255,255,255,0.2); border-radius: 14px;
+      cursor: pointer; font-family: inherit; font-size: 1rem; font-weight: 700; color: #fff;
+      background: rgba(255,255,255,0.07); transition: all 0.2s;
+    }
+    .btn-replay:hover, .btn-menu:hover { transform: translateY(-2px); }
+
+    /* Diff badge (small) */
+    .diff-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.72rem;
+      font-weight: 700; letter-spacing: 0.5px; margin-bottom: 16px;
+    }
+    .diff-badge.easy   { background: rgba(34,197,94,0.15); color: #86efac; border:1px solid rgba(34,197,94,0.35); }
+    .diff-badge.medium { background: rgba(245,158,11,0.15); color: #fcd34d; border:1px solid rgba(245,158,11,0.35); }
+    .diff-badge.hard   { background: rgba(239,68,68,0.15);  color: #fca5a5; border:1px solid rgba(239,68,68,0.35); }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .card { padding: 24px 18px; }
+      .game-title { font-size: 1.7rem; }
+      .flag-area { font-size: 64px; }
+      .flag-area img.emoji { width: 72px; height: 72px; }
+      .opt-btn { padding: 14px 10px; font-size: 0.9rem; }
+    }
+
+    /* ─── Music button ─── */
+    #music-btn {
+      position: fixed; bottom: 20px; left: 20px; z-index: 100;
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--glass); backdrop-filter: blur(16px);
+      color: #fff; font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+    #music-btn:hover { transform: scale(1.12); background: rgba(255,255,255,0.14); }
+  </style>
+</head>
+<body>
+
+<div class="bg">
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+  <div class="bg-blob"></div>
+</div>
+
+<button id="music-btn" onclick="toggleMusic()" title="הפעל מוזיקה">🎵</button>
+
+<div class="wrap">
+
+  <!-- ══ MENU SCREEN ══ -->
+  <div id="s-menu" class="screen active">
+    <div class="card">
+      <div class="menu-header">
+        <span class="game-icon">🌍</span>
+        <div class="game-title">חידון דגלים ובירות</div>
+        <div class="game-sub">30 שאלות מתוך מאגר של 90 · 10 שניות לשאלה · 3 רמות</div>
+      </div>
+
+      <div class="diff-label">בחר רמת קושי</div>
+      <div class="diff-grid">
+        <button class="diff-btn easy" onclick="pickDiff('easy')">
+          <span class="diff-dot">🟢</span>
+          <span class="diff-name">קל</span>
+          <span class="diff-desc">מדינות ודגלים מוכרים לכולם</span>
+        </button>
+        <button class="diff-btn medium" onclick="pickDiff('medium')">
+          <span class="diff-dot">🟡</span>
+          <span class="diff-name">בינוני</span>
+          <span class="diff-desc">מדינות פחות נפוצות ובירות מאתגרות</span>
+        </button>
+        <button class="diff-btn hard" onclick="pickDiff('hard')">
+          <span class="diff-dot">🔴</span>
+          <span class="diff-name">קשה</span>
+          <span class="diff-desc">מדינות נדירות ובירות ממש קשות</span>
+        </button>
+      </div>
+
+      <button class="start-btn" id="start-btn" disabled onclick="startGame()">
+        🚀 התחל משחק
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ GAME SCREEN ══ -->
+  <div id="s-game" class="screen">
+    <div class="card">
+      <div class="game-header">
+        <div class="score-pill">ניקוד: <span id="score-val">0</span></div>
+        <div class="prog-pill">שאלה <strong id="q-num">1</strong>/30</div>
+      </div>
+
+      <div class="timer-wrap">
+        <div class="timer-track"><div class="timer-fill" id="t-fill"></div></div>
+        <div class="timer-num" id="t-num">10</div>
+      </div>
+
+      <div class="q-card">
+        <div id="q-badge"></div>
+        <div class="flag-area" id="flag-area"></div>
+        <div class="q-text" id="q-text"></div>
+      </div>
+
+      <div class="opt-grid" id="opt-grid"></div>
+    </div>
+  </div>
+
+  <!-- ══ RESULTS SCREEN ══ -->
+  <div id="s-results" class="screen">
+    <div class="card res-card">
+      <div class="res-emoji" id="res-emoji"></div>
+      <div class="res-title" id="res-title"></div>
+      <div class="res-sub"  id="res-sub"></div>
+
+      <div class="donut-wrap">
+        <svg class="donut-svg" width="160" height="160" viewBox="0 0 160 160">
+          <circle class="donut-bg"  cx="80" cy="80" r="66"/>
+          <circle class="donut-arc" id="donut-arc" cx="80" cy="80" r="66"
+                  stroke-dasharray="414.69" stroke-dashoffset="414.69"/>
+        </svg>
+        <div class="donut-text">
+          <div class="donut-score" id="d-score"></div>
+          <div class="donut-of"   id="d-of"></div>
+        </div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-val" id="s-correct" style="color:#86efac"></div>
+          <div class="stat-lbl">נכון</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="s-wrong" style="color:#fca5a5"></div>
+          <div class="stat-lbl">שגוי</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val" id="s-pct" style="color:#fcd34d"></div>
+          <div class="stat-lbl">הצלחה</div>
+        </div>
+      </div>
+
+      <div class="res-btns">
+        <button class="btn-replay" onclick="startGame()">🔄 שחק שוב</button>
+        <button class="btn-menu"   onclick="goMenu()">🏠 תפריט</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   QUESTIONS DATABASE
+═══════════════════════════════════════════ */
+const DB = {
+
+easy: {
+  flags: [
+    { f:'🇺🇸', q:'לאיזו מדינה שייך הדגל הזה?', a:'ארצות הברית', w:['קנדה','אוסטרליה','מקסיקו'] },
+    { f:'🇫🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'צרפת',        w:['בלגיה','איטליה','הולנד'] },
+    { f:'🇬🇧', q:'לאיזו מדינה שייך הדגל הזה?', a:'בריטניה',      w:['אירלנד','אוסטרליה','ניו זילנד'] },
+    { f:'🇩🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'גרמניה',       w:['בלגיה','אוסטריה','הולנד'] },
+    { f:'🇯🇵', q:'לאיזו מדינה שייך הדגל הזה?', a:'יפן',           w:['סין','קוריאה הדרומית','בנגלדש'] },
+    { f:'🇮🇹', q:'לאיזו מדינה שייך הדגל הזה?', a:'איטליה',       w:['צרפת','הונגריה','אירלנד'] },
+    { f:'🇧🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'ברזיל',        w:['ארגנטינה','קולומביה','בוליביה'] },
+    { f:'🇦🇺', q:'לאיזו מדינה שייך הדגל הזה?', a:'אוסטרליה',     w:['ניו זילנד','בריטניה','אירלנד'] },
+    { f:'🇨🇦', q:'לאיזו מדינה שייך הדגל הזה?', a:'קנדה',         w:['ארצות הברית','בריטניה','אוסטרליה'] },
+    { f:'🇲🇽', q:'לאיזו מדינה שייך הדגל הזה?', a:'מקסיקו',      w:['קולומביה','ונצואלה','בוליביה'] },
+    { f:'🇷🇺', q:'לאיזו מדינה שייך הדגל הזה?', a:'רוסיה',        w:['סלובקיה','סרביה','סלובניה'] },
+    { f:'🇨🇳', q:'לאיזו מדינה שייך הדגל הזה?', a:'סין',           w:['וייטנאם','לאוס','קוריאה הצפונית'] },
+    { f:'🇪🇸', q:'לאיזו מדינה שייך הדגל הזה?', a:'ספרד',         w:['פורטוגל','איטליה','אנדורה'] },
+    { f:'🇸🇦', q:'לאיזו מדינה שייך הדגל הזה?', a:'ערב הסעודית', w:['עיראק','לוב','איחוד האמירויות'] },
+    { f:'🇮🇳', q:'לאיזו מדינה שייך הדגל הזה?', a:'הודו',          w:['מיאנמר','בנגלדש','נפאל'] },
+    { f:'🇬🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'יוון',          w:['קפריסין','מלטה','בולגריה'] },
+    { f:'🇸🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'שוודיה',       w:['נורווגיה','דנמרק','פינלנד'] },
+    { f:'🇵🇹', q:'לאיזו מדינה שייך הדגל הזה?', a:'פורטוגל',     w:['ספרד','ברזיל','איטליה'] },
+    { f:'🇳🇱', q:'לאיזו מדינה שייך הדגל הזה?', a:'הולנד',        w:['בלגיה','לוקסמבורג','גרמניה'] },
+    { f:'🇵🇱', q:'לאיזו מדינה שייך הדגל הזה?', a:'פולין',        w:['אוסטריה','אינדונזיה','מונקו'] },
+    { f:'🇮🇱', q:'לאיזו מדינה שייך הדגל הזה?', a:'ישראל',         w:['ירדן','לבנון','סוריה'] },
+    { f:'🇪🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'מצרים',         w:['לוב','סודן','ירדן'] },
+    { f:'🇿🇦', q:'לאיזו מדינה שייך הדגל הזה?', a:'דרום אפריקה',   w:['זימבבואה','קניה','נמיביה'] },
+    { f:'🇦🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'ארגנטינה',      w:['צ\'ילה','אורוגוואי','פרגוואי'] },
+    { f:'🇹🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'טורקיה',        w:['יוון','בולגריה','עיראק'] },
+    { f:'🇮🇩', q:'לאיזו מדינה שייך הדגל הזה?', a:'אינדונזיה',     w:['מלזיה','פיליפינים','ברוניי'] },
+    { f:'🇰🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'קוריאה הדרומית',w:['יפן','סין','טייוואן'] },
+    { f:'🇸🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'סינגפור',       w:['מלזיה','ברוניי','תאילנד'] },
+    { f:'🇳🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'ניגריה',        w:['גאנה','קמרון','בנין'] },
+    { f:'🇻🇳', q:'לאיזו מדינה שייך הדגל הזה?', a:'וייטנאם',       w:['לאוס','קמבודיה','תאילנד'] },
+    { f:'🇵🇰', q:'לאיזו מדינה שייך הדגל הזה?', a:'פקיסטן',        w:['אפגניסטן','בנגלדש','הודו'] },
+    { f:'🇲🇾', q:'לאיזו מדינה שייך הדגל הזה?', a:'מלזיה',         w:['אינדונזיה','סינגפור','ברוניי'] },
+    { f:'🇨🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'קולומביה',      w:['ונצואלה','אקוודור','פרו'] },
+    { f:'🇨🇱', q:'לאיזו מדינה שייך הדגל הזה?', a:'צ\'ילה',         w:['ארגנטינה','פרו','בוליביה'] },
+    { f:'🇳🇿', q:'לאיזו מדינה שייך הדגל הזה?', a:'ניו זילנד',     w:['אוסטרליה','פיג\'י','קנדה'] },
+    { f:'🇮🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'אירלנד',        w:['בריטניה','צרפת','איסלנד'] },
+    { f:'🇦🇹', q:'לאיזו מדינה שייך הדגל הזה?', a:'אוסטריה',       w:['שוויץ','גרמניה','הונגריה'] },
+    { f:'🇨🇭', q:'לאיזו מדינה שייך הדגל הזה?', a:'שוויץ',         w:['אוסטריה','ליכטנשטיין','גרמניה'] },
+    { f:'🇧🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'בלגיה',         w:['הולנד','צרפת','לוקסמבורג'] },
+    { f:'🇩🇰', q:'לאיזו מדינה שייך הדגל הזה?', a:'דנמרק',         w:['נורווגיה','שוודיה','פינלנד'] },
+    { f:'🇫🇮', q:'לאיזו מדינה שייך הדגל הזה?', a:'פינלנד',        w:['אסטוניה','שוודיה','נורווגיה'] },
+    { f:'🇳🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'נורווגיה',      w:['שוודיה','דנמרק','איסלנד'] },
+    { f:'🇨🇿', q:'לאיזו מדינה שייך הדגל הזה?', a:'צ\'כיה',         w:['סלובקיה','פולין','אוסטריה'] },
+    { f:'🇭🇺', q:'לאיזו מדינה שייך הדגל הזה?', a:'הונגריה',       w:['רומניה','אוסטריה','סלובקיה'] },
+  ],
+  capitals: [
+    { q:'מהי בירת צרפת?',          a:'פריז',             w:['ברלין','רומא','מדריד'] },
+    { q:'מהי בירת בריטניה?',       a:'לונדון',           w:['דבלין','אדינבורו','פריז'] },
+    { q:'מהי בירת גרמניה?',        a:'ברלין',            w:['מינכן','המבורג','פרנקפורט'] },
+    { q:'מהי בירת איטליה?',        a:'רומא',             w:['מילאן','ונציה','פירנצה'] },
+    { q:'מהי בירת ספרד?',          a:'מדריד',            w:['ברצלונה','סביליה','ולנסיה'] },
+    { q:'מהי בירת ארצות הברית?',   a:'וושינגטון די.סי.', w:['ניו יורק','לוס אנג\'לס','שיקגו'] },
+    { q:'מהי בירת יפן?',           a:'טוקיו',            w:['אוסקה','קיוטו','הירושימה'] },
+    { q:'מהי בירת סין?',           a:'בייג\'ינג',         w:['שנגחאי','הונג קונג','גואנגג\'ו'] },
+    { q:'מהי בירת רוסיה?',         a:'מוסקבה',           w:['סנט פטרסבורג','ולדיווסטוק','קייב'] },
+    { q:'מהי בירת ברזיל?',         a:'ברזיליה',          w:['ריו דה ז\'נרו','סאו פאולו','סלבדור'] },
+    { q:'מהי בירת אוסטרליה?',      a:'קנברה',            w:['סידני','מלבורן','בריסביין'] },
+    { q:'מהי בירת קנדה?',          a:'אוטווה',           w:['טורונטו','ונקובר','מונטריאול'] },
+    { q:'מהי בירת מקסיקו?',        a:'מקסיקו סיטי',     w:['גואדלחרה','מונטריי','פואבלה'] },
+    { q:'מהי בירת הודו?',          a:'ניו דלהי',         w:['מומבאי','קולקטה','צ\'נאי'] },
+    { q:'מהי בירת יוון?',          a:'אתונה',            w:['תסלוניקי','פטראס','הרקליון'] },
+    { q:'מהי בירת שוודיה?',        a:'סטוקהולם',        w:['גוטנבורג','מלמה','אופסלה'] },
+    { q:'מהי בירת הולנד?',         a:'אמסטרדם',          w:['רוטרדם','האג','אוטרכט'] },
+    { q:'מהי בירת פורטוגל?',       a:'ליסבון',           w:['פורטו','בראגה','קוימברה'] },
+    { q:'מהי בירת פולין?',         a:'ורשה',             w:['קרקוב','גדאנסק','לודז\''] },
+    { q:'מהי בירת ערב הסעודית?',   a:'ריאד',             w:['ג\'דה','מכה','מדינה'] },
+    { q:'מהי בירת ישראל?',         a:'ירושלים',          w:['תל אביב','חיפה','באר שבע'] },
+    { q:'מהי בירת מצרים?',         a:'קהיר',             w:['אלכסנדריה','גיזה','לוקסור'] },
+    { q:'מהי בירת דרום אפריקה?',   a:'פרטוריה',          w:['קייפטאון','יוהנסבורג','דרבן'] },
+    { q:'מהי בירת ארגנטינה?',      a:'בואנוס איירס',     w:['קורדובה','רוסריו','מנדוסה'] },
+    { q:'מהי בירת טורקיה?',        a:'אנקרה',            w:['איסטנבול','איזמיר','בורסה'] },
+    { q:'מהי בירת אינדונזיה?',     a:'ג\'קרטה',           w:['סורבאיה','בנדונג','מדן'] },
+    { q:'מהי בירת קוריאה הדרומית?',a:'סיאול',            w:['בוסאן','אינצ\'ון','דגו'] },
+    { q:'מהי בירת סינגפור?',       a:'סינגפור',          w:['ג\'והור באהרו','בתאם','פינאנג'] },
+    { q:'מהי בירת ניגריה?',        a:'אבוג\'ה',           w:['לאגוס','איבדאן','קאנו'] },
+    { q:'מהי בירת וייטנאם?',       a:'האנוי',            w:['הושי מין סיטי','דה נאנג','האיפונג'] },
+    { q:'מהי בירת פקיסטן?',        a:'איסלמאבאד',        w:['קראצ\'י','לאהור','פשוואר'] },
+    { q:'מהי בירת מלזיה?',         a:'קואלה לומפור',     w:['ג\'ורג\' טאון','ג\'והור באהרו','איפו'] },
+    { q:'מהי בירת קולומביה?',      a:'בוגוטה',           w:['מדיין','קאלי','ברנקייה'] },
+    { q:'מהי בירת צ\'ילה?',         a:'סנטיאגו',          w:['ולפאראיסו','קונספסיון','לה סרנה'] },
+    { q:'מהי בירת ניו זילנד?',     a:'וולינגטון',        w:['אוקלנד','כרייסטצ\'רץ\'','האמילטון'] },
+    { q:'מהי בירת אירלנד?',        a:'דבלין',            w:['קורק','גולווי','לימריק'] },
+    { q:'מהי בירת אוסטריה?',       a:'וינה',             w:['גראץ\'','זלצבורג','לינץ\''] },
+    { q:'מהי בירת שוויץ?',         a:'ברן',              w:['ציריך','ז\'נבה','בזל'] },
+    { q:'מהי בירת בלגיה?',         a:'בריסל',            w:['אנטוורפן','גנט','ליאז\''] },
+    { q:'מהי בירת דנמרק?',         a:'קופנהגן',          w:['ארהוס','אודנסה','אלבורג'] },
+    { q:'מהי בירת פינלנד?',        a:'הלסינקי',          w:['טמפרה','טורקו','אולו'] },
+    { q:'מהי בירת נורווגיה?',      a:'אוסלו',            w:['ברגן','טרונדהיים','סטוונגר'] },
+    { q:'מהי בירת צ\'כיה?',         a:'פראג',             w:['ברנו','אוסטראבה','פילזן'] },
+    { q:'מהי בירת הונגריה?',       a:'בודפשט',           w:['דברצן','מישקולץ','פץ\''] },
+  ]
+},
+
+medium: {
+  flags: [
+    { f:'🇹🇭', q:'לאיזו מדינה שייך הדגל הזה?', a:'תאילנד',        w:['קמבודיה','לאוס','מיאנמר'] },
+    { f:'🇦🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'ארגנטינה',      w:['אורוגוואי','צ\'ילה','פרגוואי'] },
+    { f:'🇿🇦', q:'לאיזו מדינה שייך הדגל הזה?', a:'דרום אפריקה',   w:['זימבבואה','לסוטו','בוצוואנה'] },
+    { f:'🇰🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'קוריאה הדרומית',w:['קוריאה הצפונית','טייוואן','יפן'] },
+    { f:'🇹🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'טורקיה',        w:['אזרבייג\'ן','תוניסיה','פקיסטן'] },
+    { f:'🇮🇩', q:'לאיזו מדינה שייך הדגל הזה?', a:'אינדונזיה',     w:['פולין','מונקו','סינגפור'] },
+    { f:'🇧🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'בלגיה',         w:['גרמניה','צרפת','הולנד'] },
+    { f:'🇨🇭', q:'לאיזו מדינה שייך הדגל הזה?', a:'שוויץ',         w:['אוסטריה','סלובקיה','צ\'כיה'] },
+    { f:'🇦🇹', q:'לאיזו מדינה שייך הדגל הזה?', a:'אוסטריה',       w:['הונגריה','צ\'כיה','סלובקיה'] },
+    { f:'🇺🇦', q:'לאיזו מדינה שייך הדגל הזה?', a:'אוקראינה',      w:['סלובקיה','גרמניה','בלגיה'] },
+    { f:'🇷🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'רומניה',        w:['מולדובה','צ\'אד','מאלי'] },
+    { f:'🇭🇺', q:'לאיזו מדינה שייך הדגל הזה?', a:'הונגריה',       w:['איטליה','צרפת','אירלנד'] },
+    { f:'🇫🇮', q:'לאיזו מדינה שייך הדגל הזה?', a:'פינלנד',        w:['אסטוניה','לטביה','ליטא'] },
+    { f:'🇩🇰', q:'לאיזו מדינה שייך הדגל הזה?', a:'דנמרק',         w:['נורווגיה','שוויץ','איסלנד'] },
+    { f:'🇨🇿', q:'לאיזו מדינה שייך הדגל הזה?', a:'צ\'כיה',         w:['סלובקיה','סלובניה','קרואטיה'] },
+    { f:'🇭🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'קרואטיה',       w:['סלובקיה','צ\'כיה','סרביה'] },
+    { f:'🇬🇭', q:'לאיזו מדינה שייך הדגל הזה?', a:'גאנה',          w:['גינאה','סנגל','ניגריה'] },
+    { f:'🇰🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'קניה',          w:['אתיופיה','טנזניה','אוגנדה'] },
+    { f:'🇵🇭', q:'לאיזו מדינה שייך הדגל הזה?', a:'הפיליפינים',    w:['קובה','פורטו ריקו','צ\'ילה'] },
+    { f:'🇳🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'נורווגיה',      w:['דנמרק','איסלנד','פינלנד'] },
+    { f:'🇮🇱', q:'לאיזו מדינה שייך הדגל הזה?', a:'ישראל',         w:['ירדן','לבנון','פלסטין'] },
+    { f:'🇪🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'מצרים',         w:['ירדן','לוב','תוניסיה'] },
+    { f:'🇵🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'פרו',           w:['בוליביה','קולומביה','אקוודור'] },
+    { f:'🇨🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'קולומביה',      w:['ונצואלה','פנמה','אקוודור'] },
+    { f:'🇻🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'ונצואלה',       w:['קולומביה','גויאנה','סורינאם'] },
+    { f:'🇨🇱', q:'לאיזו מדינה שייך הדגל הזה?', a:'צ\'ילה',         w:['ארגנטינה','פרו','בוליביה'] },
+    { f:'🇪🇨', q:'לאיזו מדינה שייך הדגל הזה?', a:'אקוודור',       w:['קולומביה','פרו','בוליביה'] },
+    { f:'🇸🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'סינגפור',       w:['מלזיה','ברוניי','אינדונזיה'] },
+    { f:'🇲🇾', q:'לאיזו מדינה שייך הדגל הזה?', a:'מלזיה',         w:['אינדונזיה','ברוניי','תאילנד'] },
+    { f:'🇻🇳', q:'לאיזו מדינה שייך הדגל הזה?', a:'וייטנאם',       w:['לאוס','קמבודיה','מיאנמר'] },
+    { f:'🇵🇰', q:'לאיזו מדינה שייך הדגל הזה?', a:'פקיסטן',        w:['אפגניסטן','איראן','בנגלדש'] },
+    { f:'🇳🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'ניגריה',        w:['גאנה','קמרון','ניז\'ר'] },
+    { f:'🇪🇹', q:'לאיזו מדינה שייך הדגל הזה?', a:'אתיופיה',       w:['אריתריאה','סומליה','קניה'] },
+    { f:'🇮🇪', q:'לאיזו מדינה שייך הדגל הזה?', a:'אירלנד',        w:['בריטניה','ולס','סקוטלנד'] },
+    { f:'🇮🇸', q:'לאיזו מדינה שייך הדגל הזה?', a:'איסלנד',        w:['נורווגיה','פינלנד','דנמרק'] },
+    { f:'🇸🇮', q:'לאיזו מדינה שייך הדגל הזה?', a:'סלובניה',       w:['קרואטיה','אוסטריה','צ\'כיה'] },
+    { f:'🇸🇰', q:'לאיזו מדינה שייך הדגל הזה?', a:'סלובקיה',       w:['צ\'כיה','פולין','הונגריה'] },
+    { f:'🇧🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'בולגריה',       w:['רומניה','יוון','סרביה'] },
+    { f:'🇷🇸', q:'לאיזו מדינה שייך הדגל הזה?', a:'סרביה',         w:['קרואטיה','בוסניה','בולגריה'] },
+    { f:'🇱🇺', q:'לאיזו מדינה שייך הדגל הזה?', a:'לוקסמבורג',     w:['בלגיה','הולנד','שוויץ'] },
+    { f:'🇵🇾', q:'לאיזו מדינה שייך הדגל הזה?', a:'פרגוואי',       w:['בוליביה','ארגנטינה','אורוגוואי'] },
+    { f:'🇧🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'בוליביה',       w:['פרו','פרגוואי','ארגנטינה'] },
+    { f:'🇨🇲', q:'לאיזו מדינה שייך הדגל הזה?', a:'קמרון',         w:['ניגריה','גבון','צ\'אד'] },
+    { f:'🇹🇳', q:'לאיזו מדינה שייך הדגל הזה?', a:'תוניסיה',       w:['מרוקו','אלג\'יריה','לוב'] },
+  ],
+  capitals: [
+    { q:'מהי בירת תאילנד?',        a:'בנגקוק',          w:['צ\'יאנג מאי','פוקט','פאטיה'] },
+    { q:'מהי בירת ארגנטינה?',      a:'בואנוס איירס',    w:['קורדובה','רוסריו','מנדוסה'] },
+    { q:'מהי בירת דרום אפריקה?',   a:'פרטוריה',         w:['קייפטאון','יוהנסבורג','דרבן'] },
+    { q:'מהי בירת קוריאה הדרומית?',a:'סיאול',           w:['בוסאן','אינצ\'ון','דגו'] },
+    { q:'מהי בירת טורקיה?',        a:'אנקרה',           w:['איסטנבול','איזמיר','בורסה'] },
+    { q:'מהי בירת אינדונזיה?',     a:'ג\'קרטה',          w:['סורבאיה','בנדונג','מקסאר'] },
+    { q:'מהי בירת בלגיה?',         a:'בריסל',           w:['אנטוורפן','גנט','ברוגה'] },
+    { q:'מהי בירת שוויץ?',         a:'ברן',             w:['ציריך','ז\'נבה','בזל'] },
+    { q:'מהי בירת אוסטריה?',       a:'וינה',            w:['גראץ','זלצבורג','לינץ'] },
+    { q:'מהי בירת אוקראינה?',      a:'קייב',            w:['חרקיב','אודסה','לבוב'] },
+    { q:'מהי בירת רומניה?',        a:'בוקרשט',          w:['קלוז\' נאפוקה','טימישוארה','יאשי'] },
+    { q:'מהי בירת הונגריה?',       a:'בודפשט',          w:['דברצן','מישקולץ','פץ\''] },
+    { q:'מהי בירת פינלנד?',        a:'הלסינקי',         w:['טמפרה','טורקו','אולו'] },
+    { q:'מהי בירת דנמרק?',         a:'קופנהגן',         w:['ארהוס','אודנסה','אלבורג'] },
+    { q:'מהי בירת צ\'כיה?',         a:'פראג',            w:['ברנו','אוסטראבה','פילזן'] },
+    { q:'מהי בירת קרואטיה?',       a:'זאגרב',           w:['ספליט','דוברובניק','ריאקה'] },
+    { q:'מהי בירת גאנה?',          a:'אקרה',            w:['קומאסי','טמאלה','סקונדי'] },
+    { q:'מהי בירת קניה?',          a:'נאירובי',         w:['מומבסה','קיסומו','נקורו'] },
+    { q:'מהי בירת הפיליפינים?',    a:'מנילה',           w:['סבו סיטי','דבאו','קז\'ון סיטי'] },
+    { q:'מהי בירת מרוקו?',         a:'רבאט',            w:['קזבלנקה','מרקש','פס'] },
+    { q:'מהי בירת ישראל?',         a:'ירושלים',          w:['תל אביב','חיפה','אילת'] },
+    { q:'מהי בירת מצרים?',         a:'קהיר',             w:['אלכסנדריה','גיזה','אסוואן'] },
+    { q:'מהי בירת פרו?',           a:'לימה',             w:['קוסקו','ארקיפה','טרוחיו'] },
+    { q:'מהי בירת קולומביה?',      a:'בוגוטה',           w:['מדיין','קאלי','ברנקייה'] },
+    { q:'מהי בירת ונצואלה?',       a:'קראקס',            w:['מראקאיבו','ולנסיה','ברלטה'] },
+    { q:'מהי בירת צ\'ילה?',         a:'סנטיאגו',          w:['ולפאראיסו','קונספסיון','אנטופגסטה'] },
+    { q:'מהי בירת אקוודור?',       a:'קיטו',             w:['גואיאקיל','קואנקה','מחלה'] },
+    { q:'מהי בירת סינגפור?',       a:'סינגפור',          w:['ג\'והור','בתאם','פינאנג'] },
+    { q:'מהי בירת מלזיה?',         a:'קואלה לומפור',     w:['ג\'ורג\' טאון','ג\'והור באהרו','מלאקה'] },
+    { q:'מהי בירת וייטנאם?',       a:'האנוי',            w:['הושי מין סיטי','דה נאנג','האיפונג'] },
+    { q:'מהי בירת פקיסטן?',        a:'איסלמאבאד',        w:['קראצ\'י','לאהור','פשוואר'] },
+    { q:'מהי בירת ניגריה?',        a:'אבוג\'ה',           w:['לאגוס','קאנו','איבדאן'] },
+    { q:'מהי בירת אתיופיה?',       a:'אדיס אבבה',        w:['דירה דאווה','גונדר','מקלה'] },
+    { q:'מהי בירת איסלנד?',        a:'רייקיאביק',        w:['אקוריירי','קפלוויק','הוסוויק'] },
+    { q:'מהי בירת סלובניה?',       a:'לובליאנה',         w:['מריבור','צלייה','קרן'] },
+    { q:'מהי בירת סלובקיה?',       a:'ברטיסלבה',         w:['קושיצה','פרשוב','ז\'ילינה'] },
+    { q:'מהי בירת בולגריה?',       a:'סופיה',            w:['פלובדיב','ורנה','בורגס'] },
+    { q:'מהי בירת סרביה?',         a:'בלגרד',            w:['נובי סאד','ניש','קרגויבץ'] },
+    { q:'מהי בירת לוקסמבורג?',     a:'לוקסמבורג',        w:['אש','דיקירך','אכטרנאך'] },
+    { q:'מהי בירת פרגוואי?',       a:'אסונסיון',         w:['סיודד דל אסטה','אנקרנסיון','קורדיירה'] },
+    { q:'מהי בירת בוליביה?',       a:'סוקרה',            w:['לה פאס','סנטה קרוס','קוצ\'במבה'] },
+    { q:'מהי בירת קמרון?',         a:'יאונדה',           w:['דואלה','גאורה','מברס'] },
+    { q:'מהי בירת תוניסיה?',       a:'תוניס',            w:['ספקס','סוסה','ביזרטה'] },
+    { q:'מהי בירת אלג\'יריה?',      a:'אלג\'יר',           w:['אוראן','קונסטנטין','בטנה'] },
+  ]
+},
+
+hard: {
+  flags: [
+    { f:'🇹🇯', q:'לאיזו מדינה שייך הדגל הזה?', a:'טג\'יקיסטן',      w:['אוזבקיסטן','טורקמניסטן','קירגיזסטן'] },
+    { f:'🇹🇻', q:'לאיזו מדינה שייך הדגל הזה?', a:'טובלו',           w:['קיריבאטי','נאורו','פלאו'] },
+    { f:'🇧🇹', q:'לאיזו מדינה שייך הדגל הזה?', a:'בוטן',            w:['נפאל','סרי לנקה','מלדיביים'] },
+    { f:'🇰🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'קירגיזסטן',      w:['קזחסטן','אוזבקיסטן','טג\'יקיסטן'] },
+    { f:'🇲🇩', q:'לאיזו מדינה שייך הדגל הזה?', a:'מולדובה',         w:['רומניה','צ\'אד','אנדורה'] },
+    { f:'🇸🇲', q:'לאיזו מדינה שייך הדגל הזה?', a:'סן מרינו',        w:['ליכטנשטיין','מונקו','ואטיקן'] },
+    { f:'🇱🇮', q:'לאיזו מדינה שייך הדגל הזה?', a:'ליכטנשטיין',     w:['האיטי','הולנד','לוקסמבורג'] },
+    { f:'🇧🇫', q:'לאיזו מדינה שייך הדגל הזה?', a:'בורקינה פאסו',   w:['מאלי','ניז\'ר','צ\'אד'] },
+    { f:'🇲🇷', q:'לאיזו מדינה שייך הדגל הזה?', a:'מאוריטניה',      w:['אלג\'יריה','מרוקו','סנגל'] },
+    { f:'🇩🇯', q:'לאיזו מדינה שייך הדגל הזה?', a:'ג\'יבוטי',         w:['סומליה','אתיופיה','אריתריאה'] },
+    { f:'🇸🇿', q:'לאיזו מדינה שייך הדגל הזה?', a:'אסוואטיני',       w:['לסוטו','מלאווי','זימבבואה'] },
+    { f:'🇬🇶', q:'לאיזו מדינה שייך הדגל הזה?', a:'גינאה המשוונית', w:['קמרון','גבון','סאו טומה'] },
+    { f:'🇰🇮', q:'לאיזו מדינה שייך הדגל הזה?', a:'קיריבאטי',       w:['טובלו','איי מרשל','מיקרונזיה'] },
+    { f:'🇵🇼', q:'לאיזו מדינה שייך הדגל הזה?', a:'פלאו',            w:['איי מרשל','מיקרונזיה','נאורו'] },
+    { f:'🇻🇺', q:'לאיזו מדינה שייך הדגל הזה?', a:'ונואטו',          w:['איי שלמה','פיג\'י','פפואה גינאה החדשה'] },
+    { f:'🇼🇸', q:'לאיזו מדינה שייך הדגל הזה?', a:'סמואה',           w:['טונגה','פיג\'י','ניו זילנד'] },
+    { f:'🇹🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'טונגה',           w:['סמואה','פיג\'י','איי מרשל'] },
+    { f:'🇲🇭', q:'לאיזו מדינה שייך הדגל הזה?', a:'איי מרשל',       w:['פלאו','מיקרונזיה','טובלו'] },
+    { f:'🇸🇱', q:'לאיזו מדינה שייך הדגל הזה?', a:'סיירה לאון',     w:['ליבריה','גינאה','טוגו'] },
+    { f:'🇬🇳', q:'לאיזו מדינה שייך הדגל הזה?', a:'גינאה',           w:['מאלי','סנגל','קמרון'] },
+    { f:'🇨🇫', q:'לאיזו מדינה שייך הדגל הזה?', a:'הרפובליקה המרכז-אפריקאית', w:['קמרון','קונגו','צ\'אד'] },
+    { f:'🇨🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'קונגו',           w:['גבון','קמרון','הרפובליקה המרכז-אפריקאית'] },
+    { f:'🇨🇩', q:'לאיזו מדינה שייך הדגל הזה?', a:'הרפובליקה הדמוקרטית של קונגו', w:['אנגולה','זמביה','תנזניה'] },
+    { f:'🇸🇸', q:'לאיזו מדינה שייך הדגל הזה?', a:'דרום סודן',       w:['סודן','אתיופיה','אוגנדה'] },
+    { f:'🇸🇩', q:'לאיזו מדינה שייך הדגל הזה?', a:'סודן',            w:['אתיופיה','צ\'אד','מצרים'] },
+    { f:'🇦🇴', q:'לאיזו מדינה שייך הדגל הזה?', a:'אנגולה',          w:['זמביה','נמיביה','קונגו'] },
+    { f:'🇿🇲', q:'לאיזו מדינה שייך הדגל הזה?', a:'זמביה',           w:['מלאווי','מוזמביק','אנגולה'] },
+    { f:'🇲🇼', q:'לאיזו מדינה שייך הדגל הזה?', a:'מלאווי',          w:['זמביה','מוזמביק','תנזניה'] },
+    { f:'🇲🇿', q:'לאיזו מדינה שייך הדגל הזה?', a:'מוזמביק',         w:['תנזניה','זמביה','זימבבואה'] },
+    { f:'🇹🇿', q:'לאיזו מדינה שייך הדגל הזה?', a:'תנזניה',          w:['קניה','אוגנדה','מוזמביק'] },
+    { f:'🇺🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'אוגנדה',          w:['קניה','רואנדה','תנזניה'] },
+    { f:'🇷🇼', q:'לאיזו מדינה שייך הדגל הזה?', a:'רואנדה',          w:['בורונדי','אוגנדה','קונגו'] },
+    { f:'🇧🇮', q:'לאיזו מדינה שייך הדגל הזה?', a:'בורונדי',         w:['רואנדה','קונגו','תנזניה'] },
+    { f:'🇨🇻', q:'לאיזו מדינה שייך הדגל הזה?', a:'כף ורדה',         w:['סאו טומה','קומורו','מאוריציוס'] },
+    { f:'🇬🇼', q:'לאיזו מדינה שייך הדגל הזה?', a:'גינאה ביסאו',     w:['גינאה','סנגל','גמביה'] },
+    { f:'🇬🇲', q:'לאיזו מדינה שייך הדגל הזה?', a:'גמביה',           w:['סנגל','גינאה ביסאו','גינאה'] },
+    { f:'🇸🇨', q:'לאיזו מדינה שייך הדגל הזה?', a:'סיישל',           w:['מלדיביים','מאוריציוס','קומורו'] },
+    { f:'🇰🇲', q:'לאיזו מדינה שייך הדגל הזה?', a:'קומורו',          w:['מדגסקר','מאוריציוס','סיישל'] },
+    { f:'🇲🇬', q:'לאיזו מדינה שייך הדגל הזה?', a:'מדגסקר',          w:['מוזמביק','תנזניה','קומורו'] },
+    { f:'🇦🇫', q:'לאיזו מדינה שייך הדגל הזה?', a:'אפגניסטן',        w:['פקיסטן','איראן','אוזבקיסטן'] },
+    { f:'🇳🇵', q:'לאיזו מדינה שייך הדגל הזה?', a:'נפאל',            w:['בוטן','בנגלדש','הודו'] },
+    { f:'🇱🇰', q:'לאיזו מדינה שייך הדגל הזה?', a:'סרי לנקה',        w:['מלדיביים','הודו','בנגלדש'] },
+    { f:'🇰🇭', q:'לאיזו מדינה שייך הדגל הזה?', a:'קמבודיה',         w:['תאילנד','לאוס','וייטנאם'] },
+    { f:'🇱🇦', q:'לאיזו מדינה שייך הדגל הזה?', a:'לאוס',            w:['תאילנד','קמבודיה','מיאנמר'] },
+  ],
+  capitals: [
+    { q:'מהי בירת טג\'יקיסטן?',     a:'דושנבה',          w:['טשקנט','בישקק','עשגאבאט'] },
+    { q:'מהי בירת טובלו?',          a:'פונאפוטי',        w:['סובה','טראווה','אפיה'] },
+    { q:'מהי בירת בוטן?',           a:'תימפו',           w:['קטמנדו','קולומבו','מאלה'] },
+    { q:'מהי בירת קירגיזסטן?',      a:'בישקק',           w:['אלמאטי','דושנבה','עשגאבאט'] },
+    { q:'מהי בירת מולדובה?',        a:'קישינב',          w:['בוקרשט','סופיה','מינסק'] },
+    { q:'מהי בירת מיאנמר?',         a:'נייפיידאו',       w:['יאנגון','מנדלאי','באגו'] },
+    { q:'מהי בירת אריתריאה?',       a:'אסמרה',           w:['אדיס אבבה','ג\'יבוטי','מוגדישו'] },
+    { q:'מהי בירת גינאה המשוונית?', a:'מלאבו',           w:['יאונדה','ליברוויל','בנגי'] },
+    { q:'מהי בירת קיריבאטי?',       a:'טראווה הדרומית', w:['פונאפוטי','סובה','אפיה'] },
+    { q:'מהי בירת פלאו?',           a:'נגרולמוד',        w:['קורור','הגאטנה','פאליקיר'] },
+    { q:'מהי בירת ונואטו?',         a:'פורט וילה',       w:['הוניארה','סובה','אפיה'] },
+    { q:'מהי בירת אסוואטיני?',      a:'מבאבנה',          w:['מסרו','לילונגווה','גבורונה'] },
+    { q:'מהי בירת בורקינה פאסו?',   a:'ואגאדוגו',        w:['ניאמיי','במקו','נג\'מנה'] },
+    { q:'מהי בירת ג\'יבוטי?',        a:'ג\'יבוטי',         w:['אסמרה','מוגדישו','אדיס אבבה'] },
+    { q:'מהי בירת פפואה גינאה החדשה?',a:'פורט מורסבי',  w:['לאה','הר הגן','מדאנג'] },
+    { q:'מהי בירת סמואה?',          a:'אפיה',            w:['סובה','נוקואלופה','פונאפוטי'] },
+    { q:'מהי בירת טונגה?',          a:'נוקואלופה',       w:['סובה','אפיה','פורט וילה'] },
+    { q:'מהי בירת איי מרשל?',       a:'מג\'ורו',          w:['פאליקיר','טראווה','פונאפוטי'] },
+    { q:'מהי בירת נאורו?',          a:'יארן',            w:['פונאפוטי','טראווה','סובה'] },
+    { q:'מהי בירת סאו טומה ופרינסיפה?',a:'סאו טומה',    w:['מלאבו','ליברוויל','בנגי'] },
+    { q:'מהי בירת הרפובליקה המרכז-אפריקאית?', a:'בנגי',  w:['יאונדה','ליברוויל','נג\'מנה'] },
+    { q:'מהי בירת קונגו?',          a:'ברזוויל',          w:['קינשאסה','בנגי','לואנדה'] },
+    { q:'מהי בירת הרפובליקה הדמוקרטית של קונגו?', a:'קינשאסה', w:['ברזוויל','לואנדה','לוסקה'] },
+    { q:'מהי בירת דרום סודן?',      a:'ג\'ובה',            w:['חרטום','אדיס אבבה','קמפאלה'] },
+    { q:'מהי בירת סודן?',           a:'חרטום',            w:['ג\'ובה','אסמרה','אדיס אבבה'] },
+    { q:'מהי בירת אנגולה?',         a:'לואנדה',           w:['לובנגו','הואמבו','מלאנז\''] },
+    { q:'מהי בירת זמביה?',          a:'לוסקה',            w:['נדולה','קיטווה','לואנשיה'] },
+    { q:'מהי בירת מלאווי?',         a:'לילונגווה',        w:['בלנטייר','מזוזו','זומבה'] },
+    { q:'מהי בירת מוזמביק?',        a:'מפוטו',            w:['מטמה','בירה','נמפולה'] },
+    { q:'מהי בירת תנזניה?',         a:'דודומה',           w:['דאר א-סלאם','מוואנזה','ארושה'] },
+    { q:'מהי בירת אוגנדה?',         a:'קמפאלה',           w:['גולו','מבאלה','ג\'ינג\'ה'] },
+    { q:'מהי בירת רואנדה?',         a:'קיגלי',            w:['בוטארה','גיסניי','הוייה'] },
+    { q:'מהי בירת בורונדי?',        a:'גיטגה',            w:['בוג\'ומבורה','נגוזי','רויגי'] },
+    { q:'מהי בירת כף ורדה?',        a:'פריאה',            w:['מינדלו','סאו פיליפה','אסומדה'] },
+    { q:'מהי בירת גינאה ביסאו?',    a:'ביסאו',            w:['גאבו','בפאטה','קאצ\'ו'] },
+    { q:'מהי בירת גמביה?',          a:'בנג\'ול',           w:['סרקונדה','בריקמה','ג\'ינאק'] },
+    { q:'מהי בירת סיישל?',          a:'ויקטוריה',         w:['בו ולון','טקמקה','אנס רויאל'] },
+    { q:'מהי בירת קומורו?',         a:'מורוני',           w:['פומבוני','מוצמודו','פוני'] },
+    { q:'מהי בירת מדגסקר?',         a:'אנטנאנריוו',       w:['טואמסינה','אנציראבה','פיאנרנצוא'] },
+    { q:'מהי בירת אפגניסטן?',       a:'קאבול',            w:['קנדהאר','הראת','מזאר א-שריף'] },
+    { q:'מהי בירת נפאל?',           a:'קטמנדו',           w:['פוקהרה','לאליטפור','ביראטנגר'] },
+    { q:'מהי בירת קמבודיה?',        a:'פנום פן',          w:['סיאם ריפ','בטמבאנג','קמפונג צ\'אם'] },
+    { q:'מהי בירת לאוס?',           a:'ויינטיאן',         w:['לואנג פראבנג','סוואנקט','פקסה'] },
+    { q:'מהי בירת אוזבקיסטן?',      a:'טשקנט',            w:['סמרקנד','בוכרה','נמנגן'] },
+  ]
+}
+
+};
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let diff = null, gameQ = [], qIdx = 0, score = 0, correctCount = 0;
+let timer = null, timeLeft = 10, answered = false;
+
+const TOTAL = 30;
+const DIFF_LABELS = { easy:'קל', medium:'בינוני', hard:'קשה' };
+
+/* ═══════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════ */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function screen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function parseTwemoji(el) {
+  if (window.twemoji) twemoji.parse(el, { folder:'svg', ext:'.svg' });
+}
+
+/* ═══════════════════════════════════════════
+   MENU
+═══════════════════════════════════════════ */
+function pickDiff(d) {
+  diff = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('sel'));
+  document.querySelector('.diff-btn.'+d).classList.add('sel');
+  document.getElementById('start-btn').disabled = false;
+}
+
+function goMenu() {
+  diff = null;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('sel'));
+  document.getElementById('start-btn').disabled = true;
+  screen('s-menu');
+}
+
+/* ═══════════════════════════════════════════
+   GAME START
+═══════════════════════════════════════════ */
+function startGame() {
+  const pool = DB[diff];
+  const flags    = shuffle(pool.flags).slice(0,15).map(q => ({...q, type:'flag'}));
+  const capitals = shuffle(pool.capitals).slice(0,15).map(q => ({...q, type:'capital'}));
+  gameQ = shuffle([...flags, ...capitals]);
+  qIdx = 0; score = 0; correctCount = 0;
+  screen('s-game');
+  showQ();
+}
+
+/* ═══════════════════════════════════════════
+   SHOW QUESTION
+═══════════════════════════════════════════ */
+function showQ() {
+  answered = false;
+  clearInterval(timer);
+  timeLeft = 10;
+
+  const q = gameQ[qIdx];
+
+  // Header
+  document.getElementById('score-val').textContent = score;
+  document.getElementById('q-num').textContent = qIdx+1;
+
+  // Badge
+  const badge = document.getElementById('q-badge');
+  if (q.type === 'flag') {
+    badge.innerHTML = `<span class="q-type-badge badge-flag">🏳️ זהה את הדגל</span>`;
+  } else {
+    badge.innerHTML = `<span class="q-type-badge badge-capital">🏙️ עיר בירה</span>`;
+  }
+
+  // Flag
+  const fa = document.getElementById('flag-area');
+  if (q.type === 'flag') {
+    fa.innerHTML = q.f;
+    fa.style.display = 'flex';
+    parseTwemoji(fa);
+  } else {
+    fa.innerHTML = '';
+    fa.style.display = 'none';
+  }
+
+  // Question text
+  document.getElementById('q-text').textContent = q.q;
+
+  // Options
+  const opts = shuffle([q.a, ...q.w]);
+  const grid = document.getElementById('opt-grid');
+  grid.innerHTML = '';
+  opts.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.onclick = () => pick(btn, opt, q.a);
+    grid.appendChild(btn);
+  });
+
+  // Timer
+  updateTimer(10);
+  timer = setInterval(() => {
+    timeLeft--;
+    updateTimer(timeLeft);
+    if (timeLeft <= 0) { clearInterval(timer); if (!answered) timeUp(); }
+  }, 1000);
+}
+
+/* ═══════════════════════════════════════════
+   TIMER
+═══════════════════════════════════════════ */
+function updateTimer(t) {
+  const fill = document.getElementById('t-fill');
+  const num  = document.getElementById('t-num');
+  const pct  = (t / 10) * 100;
+  fill.style.width = pct + '%';
+  num.textContent  = t;
+
+  fill.className = 'timer-fill';
+  num.className  = 'timer-num';
+  if (t <= 3) { fill.classList.add('crit'); num.classList.add('crit'); }
+  else if (t <= 6) { fill.classList.add('warn'); }
+}
+
+/* ═══════════════════════════════════════════
+   ANSWER
+═══════════════════════════════════════════ */
+function pick(btn, chosen, correct) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timer);
+
+  const btns = document.querySelectorAll('.opt-btn');
+  btns.forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correct) b.classList.add('correct');
+    else if (b === btn && chosen !== correct) b.classList.add('wrong');
+  });
+
+  if (chosen === correct) {
+    const pts = timeLeft > 5 ? 5 : 3;
+    score += pts;
+    correctCount++;
+    const flash = document.createElement('div');
+    flash.className = 'pts-flash';
+    flash.textContent = '+' + pts;
+    btn.appendChild(flash);
+  }
+  document.getElementById('score-val').textContent = score;
+
+  setTimeout(advance, 1400);
+}
+
+function timeUp() {
+  answered = true;
+  const correct = gameQ[qIdx].a;
+  document.querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === correct) b.classList.add('show-c');
+  });
+  setTimeout(advance, 1400);
+}
+
+function advance() {
+  qIdx++;
+  if (qIdx >= TOTAL) showResults();
+  else showQ();
+}
+
+/* ═══════════════════════════════════════════
+   RESULTS
+═══════════════════════════════════════════ */
+function showResults() {
+  screen('s-results');
+  const MAX_SCORE = TOTAL * 5;
+  const pct = Math.round((score/MAX_SCORE)*100);
+
+  // Emoji + message
+  let emoji, title, sub;
+  if (pct >= 90) { emoji='🏆'; title='מושלם!';        sub='אתה גיאוגרף מוכשר ברמת עולם!'; }
+  else if (pct >= 75) { emoji='🌟'; title='כל הכבוד!';     sub='תוצאה מרשימה מאוד, עוד קצת!'; }
+  else if (pct >= 55) { emoji='👍'; title='לא רע!';         sub='כדאי להתאמן עוד קצת.'; }
+  else if (pct >= 35) { emoji='📚'; title='יש מקום לשיפור!'; sub='אל תוותר, תנסה שוב!'; }
+  else { emoji='💡'; title='קשה היה!'; sub='למד ונסה שוב — אתה יכול!'; }
+
+  document.getElementById('res-emoji').textContent = emoji;
+  document.getElementById('res-title').textContent = title;
+  document.getElementById('res-sub').textContent   = sub;
+
+  document.getElementById('d-score').textContent = score;
+  document.getElementById('d-of').textContent    = 'מתוך '+MAX_SCORE;
+  document.getElementById('s-correct').textContent = correctCount;
+  document.getElementById('s-wrong').textContent   = TOTAL-correctCount;
+  document.getElementById('s-pct').textContent     = pct+'%';
+
+  // Donut arc
+  const circ = 2 * Math.PI * 66;   // 414.69
+  const arc = document.getElementById('donut-arc');
+  const color = pct>=70 ? '#22c55e' : pct>=45 ? '#f59e0b' : '#ef4444';
+  arc.setAttribute('stroke', color);
+
+  // animate after paint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      arc.style.strokeDashoffset = circ * (1 - score/MAX_SCORE);
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
+   MUSIC ENGINE (Web Audio API)
+═══════════════════════════════════════════ */
+let audioCtx = null, masterGain = null, musicPlaying = false;
+let chordOscs = [], chordTimeout = null, chordIdx = 0;
+
+// Calm ambient chord progression: Cmaj7 → Am7 → Fmaj7 → Gsus2
+const CHORDS = [
+  [130.81, 164.81, 196.00, 246.94],
+  [110.00, 130.81, 164.81, 220.00],
+  [ 87.31, 110.00, 130.81, 174.61],
+  [ 98.00, 123.47, 146.83, 196.00],
+];
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  masterGain = audioCtx.createGain();
+  masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 2000;
+
+  const delay = audioCtx.createDelay(1.0);
+  delay.delayTime.value = 0.4;
+  const fb  = audioCtx.createGain(); fb.gain.value  = 0.3;
+  const wet = audioCtx.createGain(); wet.gain.value = 0.18;
+  delay.connect(fb); fb.connect(delay);
+  delay.connect(wet); wet.connect(audioCtx.destination);
+
+  masterGain.connect(filter);
+  filter.connect(audioCtx.destination);
+  filter.connect(delay);
+}
+
+function playChord(freqs, fadeIn) {
+  const now = audioCtx.currentTime;
+
+  // Fade out previous oscillators
+  chordOscs.forEach(({ osc, g }) => {
+    g.gain.setValueAtTime(g.gain.value, now);
+    g.gain.linearRampToValueAtTime(0, now + 1.5);
+    setTimeout(() => { try { osc.stop(); } catch(e){} }, 2000);
+  });
+  chordOscs = [];
+
+  freqs.forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const g   = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    osc.detune.value = (i % 2 === 0 ? 1 : -1) * 6;
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.18, now + fadeIn);
+    osc.connect(g);
+    g.connect(masterGain);
+    osc.start(now);
+    chordOscs.push({ osc, g });
+  });
+}
+
+function scheduleNext() {
+  chordIdx = (chordIdx + 1) % CHORDS.length;
+  playChord(CHORDS[chordIdx], 2.5);
+  chordTimeout = setTimeout(scheduleNext, 8000);
+}
+
+function startMusic() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  musicPlaying = true;
+  const now = audioCtx.currentTime;
+  masterGain.gain.cancelScheduledValues(now);
+  masterGain.gain.setValueAtTime(0, now);
+  masterGain.gain.linearRampToValueAtTime(0.6, now + 1.5);
+  playChord(CHORDS[chordIdx], 1.5);
+  clearTimeout(chordTimeout);
+  chordTimeout = setTimeout(scheduleNext, 8000);
+  const btn = document.getElementById('music-btn');
+  btn.textContent = '🔇'; btn.title = 'השתק מוזיקה';
+}
+
+function stopMusic() {
+  if (!audioCtx) return;
+  musicPlaying = false;
+  const now = audioCtx.currentTime;
+  masterGain.gain.cancelScheduledValues(now);
+  masterGain.gain.setValueAtTime(masterGain.gain.value, now);
+  masterGain.gain.linearRampToValueAtTime(0, now + 1.0);
+  clearTimeout(chordTimeout);
+  const btn = document.getElementById('music-btn');
+  btn.textContent = '🎵'; btn.title = 'הפעל מוזיקה';
+}
+
+function toggleMusic() {
+  if (musicPlaying) stopMusic(); else startMusic();
+}
+</script>
+</body>
+</html>

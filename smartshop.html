@@ -154,6 +154,7 @@
     .item-body { flex: 1; min-width: 0; }
     .item-name { font-size: 0.94rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
     .item-emoji { font-size: 1.1rem; line-height: 1; flex-shrink: 0; }
+    .item-photo { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
     .item-note { font-size: 0.76rem; color: var(--text-muted); font-style: italic; }
     .item-meta { font-size: 0.76rem; color: var(--text-muted); margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
     .qty-tag { display: inline-flex; align-items: center; background: #E8F5E9; border-radius: 10px; padding: 3px 10px; color: var(--primary); font-weight: 700; font-size: 0.82rem; cursor: pointer; gap: 3px; transition: background var(--tr); }
@@ -681,6 +682,128 @@ const PROD_EMOJI = {
 
 function prodEmoji(name) { return PROD_EMOJI[name] || ''; }
 
+// ============================================================
+//  PRODUCT PHOTOS (Wikipedia REST API, cached in localStorage)
+// ============================================================
+const PROD_WIKI = {
+  // ירקות ופירות
+  "עגבניות":"Tomato","מלפפונים":"Cucumber","פלפל אדום":"Bell_pepper","פלפל ירוק":"Bell_pepper","פלפל צהוב":"Bell_pepper",
+  "בצל":"Onion","שום":"Garlic","תפוחי אדמה":"Potato","בטטה":"Sweet_potato","גזר":"Carrot",
+  "כרובית":"Cauliflower","ברוקולי":"Broccoli","תירס":"Maize","אבוקדו":"Avocado","חציל":"Eggplant",
+  "תפוחים":"Apple","בננות":"Banana","תפוזים":"Orange_(fruit)","לימונים":"Lemon","מנגו":"Mango",
+  "ענבים":"Grape","תותים":"Strawberry","אוכמניות":"Blueberry","מלון":"Melon","אבטיח":"Watermelon",
+  "אננס":"Pineapple","קיווי":"Kiwifruit","אגס":"Pear","דובדבן":"Cherry","רימון":"Pomegranate",
+  "אפרסקים":"Peach","נקטרינות":"Nectarine","שזיפים":"Plum","תמרים":"Date_(fruit)",
+  // מוצרי חלב וביצים
+  "חלב 3%":"Milk","חלב 1%":"Milk","חלב דל לקטוז":"Milk","שמנת לקפה":"Cream",
+  "שמנת מתוקה":"Whipped_cream","שמנת חמוצה":"Sour_cream",
+  "יוגורט טבעי":"Yogurt","יוגורט יווני":"Greek_yogurt","לבן":"Buttermilk","קפיר":"Kefir",
+  "גבינה לבנה 5%":"Cottage_cheese","גבינה לבנה 9%":"Cottage_cheese",
+  "גבינה בולגרית":"Brine_cheese","גבינה צהובה":"Cheddar_cheese",
+  "גבינת מוצרלה":"Mozzarella","גבינת פרמזן":"Parmigiano-Reggiano","גבינת קממבר":"Camembert",
+  "קוטג' 5%":"Cottage_cheese","קוטג' 9%":"Cottage_cheese",
+  "חמאה":"Butter","חמאה מלוחה":"Butter","ביצים גדולות":"Egg","ביצים בינוניות":"Egg","ביצי חופש":"Egg","מרגרינה":"Margarine",
+  // לחם ומאפים
+  "לחם אחיד":"Bread","לחם מלא":"Whole_wheat_bread","לחם שיפון":"Rye_bread","לחם כוסמין":"Spelt",
+  "חלה":"Challah","פיתות":"Pita","לאפה":"Flatbread","טורטיות":"Tortilla",
+  "בגט":"Baguette","לחמניות":"Bread_roll","קרואסון":"Croissant",
+  "קרקרים":"Cracker_(food)","מצות":"Matzo","בייגל":"Bagel","גריסימי":"Grissini","פרצלים":"Pretzel",
+  // בשר ועוף
+  "חזה עוף":"Chicken_as_food","שוקיים עוף":"Chicken_as_food","פרגיות":"Chicken_as_food","כנפיים עוף":"Chicken_as_food",
+  "קציצות עוף":"Chicken_as_food","שניצל עוף":"Schnitzel",
+  "בשר טחון":"Ground_beef","קציצות בקר":"Meatball","אנטריקוט":"Entrecôte","פילה בקר":"Beef_tenderloin",
+  "נקניקיות":"Sausage","קבב":"Kebab","המבורגר":"Hamburger","כבד עוף":"Chicken_liver",
+  // דגים ופירות ים
+  "סלמון":"Salmon","דניס":"Sea_bass","לוקוס":"Lemon_sole","בורי":"Mullet","מוסר ים":"Sea_bass",
+  "טונה בשמן":"Tuna","טונה במים":"Tuna","מקרל":"Mackerel","סרדינים":"Sardine",
+  "הרינג":"Herring","שרימפס":"Shrimp",
+  // מזון יבש
+  "אורז לבן":"Rice","אורז מלא":"Brown_rice","אורז בסמטי":"Basmati",
+  "פסטה ספגטי":"Spaghetti","פסטה פנה":"Penne","פסטה פרפרים":"Farfalle",
+  "קוסקוס":"Couscous","בורגול":"Bulgur","קינואה":"Quinoa",
+  "עדשים כתומות":"Lentil","עדשים ירוקות":"Lentil","חומוס יבש":"Chickpea","שעועית יבשה":"Bean",
+  "קמח לבן":"Flour","קמח מלא":"Whole_wheat_flour","שיבולת שועל":"Oat","גרנולה":"Granola","קורנפלקס":"Corn_flakes",
+  "סוכר לבן":"Sugar","סוכר חום":"Brown_sugar","מלח":"Salt",
+  "שמן זית":"Olive_oil","שמן חמניות":"Sunflower_oil","חומץ":"Vinegar","רוטב סויה":"Soy_sauce",
+  "טחינה":"Tahini","חומוס מוכן":"Hummus",
+  // שתיות
+  "מים מינרלים":"Mineral_water","מים מוגזים":"Carbonated_water",
+  "מיץ תפוזים":"Orange_juice","מיץ תפוחים":"Apple_juice",
+  "קוקה קולה":"Coca-Cola","ספרייט":"Sprite_(drink)","פאנטה":"Fanta",
+  "בירה":"Beer","יין אדום":"Red_wine","יין לבן":"White_wine","יין רוזה":"Rosé_wine",
+  "קפה שחור":"Coffee","קפה טחון":"Coffee","קפה נמס":"Instant_coffee",
+  "תה שחור":"Black_tea","תה ירוק":"Green_tea","תה צמחים":"Herbal_tea","לימונדה":"Lemonade",
+  // חטיפים וממתקים
+  "שוקולד מריר":"Dark_chocolate","שוקולד חלב":"Milk_chocolate","שוקולד לבן":"White_chocolate",
+  "ביסקוויטים":"Biscuit","אוריאו":"Oreo","צ'יפס":"Potato_chip","פופקורן":"Popcorn",
+  "אגוזי מלך":"Walnut","שקדים":"Almond","קשיו":"Cashew","פיסטוק":"Pistachio","בוטנים":"Peanut",
+  "גרעיני חמניות":"Sunflower_seed","הלווה":"Halva","ממתקים":"Candy","סוכריות":"Lollipop",
+  // מוצרים קפואים
+  "גלידה וניל":"Vanilla_ice_cream","גלידה שוקולד":"Chocolate_ice_cream",
+  "פיצה קפואה":"Pizza","שניצל קפוא":"Schnitzel",
+  // ניקיון ובית
+  "נייר טואלט":"Toilet_paper","נוזל כלים":"Dishwashing_liquid","אקונומיקה":"Bleach","ספוגים":"Sponge",
+  // טיפוח ובריאות
+  "שמפו":"Shampoo","סבון גוף":"Soap","משחת שיניים":"Toothpaste","מברשת שיניים":"Toothbrush",
+  "דאודורנט":"Deodorant","קרם לחות":"Moisturizer","ויטמינים":"Vitamin","רטייה":"Bandage",
+  // מוצרי תינוק
+  "חיתולים מידה 3":"Diaper","חיתולים מידה 4":"Diaper","חיתולים מידה 5":"Diaper",
+  "מגבונים לחים":"Wet_wipe","מוצץ":"Pacifier","בקבוק תינוק":"Baby_bottle",
+  // מוצרי פסח
+  "מצות רגילות":"Matzo","מצות שמורות":"Matzo","מצות עבות":"Matzo","קמח מצה":"Matzo",
+  "יין אדום לפסח":"Red_wine","יין לבן לפסח":"White_wine","חרוסת":"Charoset",
+  "דבש":"Honey"
+};
+
+const CAT_WIKI = {
+  "ירקות ופירות":"Vegetable","מוצרי חלב וביצים":"Dairy_product","לחם ומאפים":"Bread",
+  "בשר ועוף":"Poultry","דגים ופירות ים":"Fish","מזון יבש":"Pantry","שתיות":"Drink",
+  "חטיפים וממתקים":"Snack_food","מוצרים קפואים":"Frozen_food","ניקיון ובית":"Cleaning_agent",
+  "טיפוח ובריאות":"Cosmetics","מוצרי תינוק":"Diaper","מוצרי פסח":"Matzo","כללי":"Grocery_store"
+};
+
+const wikiImgCache = {};
+const WIKI_CACHE_KEY = 'ss_wiki_imgs_v1';
+const WIKI_CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
+
+function loadWikiCacheFromStorage() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(WIKI_CACHE_KEY) || 'null');
+    if (stored && Date.now() - stored.ts < WIKI_CACHE_TTL) {
+      Object.assign(wikiImgCache, stored.data);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+function saveWikiCacheToStorage() {
+  try { localStorage.setItem(WIKI_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: wikiImgCache })); } catch(e) {}
+}
+
+async function loadWikiImages() {
+  if (loadWikiCacheFromStorage()) { render(); return; }
+  const articles = new Set([...Object.values(PROD_WIKI), ...Object.values(CAT_WIKI)]);
+  await Promise.allSettled([...articles].map(async article => {
+    try {
+      const res = await fetch('https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(article));
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.thumbnail && data.thumbnail.source) wikiImgCache[article] = data.thumbnail.source;
+    } catch(e) {}
+  }));
+  saveWikiCacheToStorage();
+  render();
+}
+
+function prodImgUrl(name, cat) {
+  const pa = PROD_WIKI[name];
+  if (pa && wikiImgCache[pa]) return wikiImgCache[pa];
+  const ca = CAT_WIKI[cat];
+  if (ca && wikiImgCache[ca]) return wikiImgCache[ca];
+  return '';
+}
+
 // Flatten for autocomplete search
 const ALL_PRODUCTS = [];
 Object.entries(DB).forEach(([cat, arr]) => arr.forEach(name => ALL_PRODUCTS.push({ name, cat })));
@@ -722,6 +845,7 @@ function init() {
   }
 
   populateCatSelects();
+  loadWikiImages();
 
   const cfgOk = firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith('YOUR');
   if (!cfgOk) {
@@ -1164,10 +1288,16 @@ function itemHTML(id, it, purch) {
     : `<button class="act" onclick="openEdit('${id}')" title="ערוך">✏️</button>
        <button class="act del" onclick="askDel('${id}')" title="מחק">🗑️</button>`;
 
+  const imgUrl = prodImgUrl(it.name, it.cat || 'כללי');
+  const photoEl = imgUrl
+    ? `<img class="item-photo" src="${hEsc(imgUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    : (prodEmoji(it.name) ? `<span class="item-emoji">${prodEmoji(it.name)}</span>` : '');
+
   return `<div class="item" data-id="${id}">
     ${checkBtn}
+    ${photoEl}
     <div class="item-body">
-      <div class="item-name">${hEsc(it.name)}${prodEmoji(it.name) ? `<span class="item-emoji">${prodEmoji(it.name)}</span>` : ''}</div>
+      <div class="item-name">${hEsc(it.name)}</div>
       ${meta}
     </div>
     <div class="item-actions">${actions}</div>

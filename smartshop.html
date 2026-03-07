@@ -1639,8 +1639,11 @@ function applyDark(on) {
 // ============================================================
 //  BARCODE SCAN
 // ============================================================
-let _zxingReader = null;
+let _zxingReader  = null;
 let _scanStream   = null;
+let _scanActive   = false;
+let _scanRaf      = null;
+let _scanLastTs   = 0;
 
 async function openScan() {
   document.getElementById('scanOverlay').classList.add('open');
@@ -1662,20 +1665,53 @@ function closeScan() {
   document.getElementById('scanOverlay').classList.remove('open');
 }
 
-function startScanner() {
-  setStatus('מכוון את הברקוד לתוך המסגרת…');
+async function startScanner() {
+  setStatus('מאתחל מצלמה…');
+  const videoEl = document.getElementById('scanVideo');
   try {
-    _zxingReader = new ZXing.BrowserMultiFormatReader();
-    _zxingReader.decodeFromVideoDevice(null, 'scanVideo', (result, err) => {
-      if (result) onBarcodeDetected(result.getText());
+    _scanStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
     });
+    videoEl.srcObject = _scanStream;
+    await videoEl.play();
+    _zxingReader = new ZXing.BrowserMultiFormatReader();
+    _scanActive  = true;
+    _scanLastTs  = 0;
+    setStatus('מכוון את הברקוד לתוך המסגרת…');
+    requestAnimationFrame(_scanTick);
   } catch(e) {
-    setStatus('❌ לא ניתן לגשת למצלמה. אפשר גישה בהגדרות הדפדפן.');
+    setStatus('❌ לא ניתן לגשת למצלמה — אפשר גישה בהגדרות הדפדפן');
   }
 }
 
+function _scanTick(ts) {
+  if (!_scanActive) return;
+  _scanRaf = requestAnimationFrame(_scanTick);
+  if (ts - _scanLastTs < 300) return;   // ~3 fps — מספיק לסריקה
+  _scanLastTs = ts;
+  const videoEl = document.getElementById('scanVideo');
+  if (!videoEl || videoEl.readyState < 2 || !videoEl.videoWidth) return;
+  const canvas = document.createElement('canvas');
+  canvas.width  = videoEl.videoWidth;
+  canvas.height = videoEl.videoHeight;
+  canvas.getContext('2d').drawImage(videoEl, 0, 0);
+  try {
+    const result = _zxingReader.decodeFromCanvas(canvas);
+    if (result) {
+      _scanActive = false;
+      cancelAnimationFrame(_scanRaf);
+      onBarcodeDetected(result.getText());
+    }
+  } catch(e) { /* NotFoundException — ממשיך */ }
+}
+
 function stopScanner() {
-  if (_zxingReader) { try { _zxingReader.reset(); } catch(e){} _zxingReader = null; }
+  _scanActive = false;
+  if (_scanRaf)    { cancelAnimationFrame(_scanRaf); _scanRaf = null; }
+  if (_scanStream) { _scanStream.getTracks().forEach(t => t.stop()); _scanStream = null; }
+  _zxingReader = null;
+  const v = document.getElementById('scanVideo');
+  if (v) v.srcObject = null;
 }
 
 async function onBarcodeDetected(code) {
@@ -1716,6 +1752,7 @@ function addScannedProduct() {
 
 function scanAgain() {
   document.getElementById('scanResult').style.display = 'none';
+  stopScanner();
   startScanner();
 }
 

@@ -247,13 +247,19 @@
     .bcat-name { flex: 1; font-size: 0.92rem; font-weight: 500; }
     .bcat-cnt { font-size: 0.75rem; color: var(--text-muted); }
     .bcat-arrow { color: var(--text-muted); font-size: 0.9rem; }
-    .bprod-item { display: flex; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--border); gap: 10px; transition: background var(--tr); }
+    .bprod-item { display: flex; flex-wrap: wrap; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--border); gap: 10px; transition: background var(--tr); }
     .bprod-item:hover { background: var(--surface2); }
     .bprod-name { flex: 1; font-size: 0.91rem; }
     .bprod-add { width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--primary); background: none; color: var(--primary); cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all var(--tr); font-weight: 700; }
     .bprod-add:hover { background: var(--primary); color: white; }
     .bprod-add.added { background: var(--primary); color: white; border-color: var(--primary); font-size: 0.85rem; cursor: default; }
     .bprod-add:disabled { cursor: default; }
+    .bprod-qty-row { width: 100%; display: flex; align-items: center; gap: 8px; padding: 6px 0 2px; animation: fadeIn 0.15s ease; }
+    .bprod-qty-num { width: 64px; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.9rem; background: var(--surface); color: var(--text); text-align: center; }
+    .bprod-qty-unit { flex: 1; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 0.88rem; background: var(--surface); color: var(--text); }
+    .bprod-qty-confirm { padding: 5px 14px; border-radius: 8px; border: none; background: var(--primary); color: white; font-size: 0.88rem; cursor: pointer; font-weight: 600; }
+    .bprod-qty-cancel { padding: 5px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: none; color: var(--text-muted); font-size: 0.88rem; cursor: pointer; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(-4px); } to { opacity:1; transform: translateY(0); } }
 
     /* ---- LISTS MODAL ---- */
     .lists-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; display: none; align-items: center; justify-content: center; padding: 16px; }
@@ -330,10 +336,9 @@
         <button class="icon-btn" onclick="openBrowse()" title="עיון לפי קטגוריה">📂</button>
         <button class="icon-btn" onclick="openLists()" title="הרשימות שלי">📋</button>
         <button class="icon-btn" id="darkBtn" onclick="toggleDark()" title="מצב כהה/בהיר">🌙</button>
-        <button class="icon-btn" onclick="shareWhatsApp()" title="שתף בוואטסאפ" style="padding:4px;line-height:1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22" height="22">
-            <circle cx="24" cy="24" r="24" fill="#25D366"/>
-            <path fill="white" d="M34.5 13.5A14.8 14.8 0 0 0 24 9C15.7 9 9 15.7 9 24c0 2.6.7 5.2 2 7.4L9 39l7.8-2c2.1 1.1 4.5 1.7 6.9 1.7h.1c8.3 0 15-6.7 15-15 0-4-.5-7.7-4.3-10.2zM24 37.5c-2.2 0-4.4-.6-6.3-1.7l-.5-.3-4.6 1.2 1.2-4.5-.3-.5A12.4 12.4 0 0 1 11.5 24C11.5 17.1 17.1 11.5 24 11.5c3.3 0 6.4 1.3 8.7 3.6S36 20.7 36 24c0 6.9-5.6 13.5-12 13.5zm6.8-9.3c-.4-.2-2.2-1.1-2.6-1.2-.4-.1-.6-.2-.9.2-.3.4-1 1.2-1.2 1.4-.2.2-.4.3-.8.1-.4-.2-1.6-.6-3-1.9-1.1-1-1.8-2.2-2.1-2.6-.2-.4 0-.6.2-.8l.6-.7c.2-.2.2-.4.4-.6.1-.2.1-.4 0-.6-.1-.2-.9-2.1-1.2-2.9-.3-.8-.6-.7-.9-.7h-.7c-.3 0-.7.1-1 .4-.4.4-1.4 1.3-1.4 3.2s1.4 3.7 1.6 4c.2.2 2.8 4.3 6.8 6 .9.4 1.7.6 2.3.8.9.3 1.8.2 2.5.1.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.6.2-1.8-.1-.2-.4-.3-.8-.5z"/>
+        <button class="icon-btn" onclick="shareWhatsApp()" title="שתף בוואטסאפ">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="white">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.978-1.413A9.953 9.953 0 0 0 12 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.95 7.95 0 0 1-4.054-1.111l-.29-.173-2.952.838.872-2.875-.19-.298A7.96 7.96 0 0 1 4 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8zm4.406-5.884c-.242-.121-1.43-.705-1.652-.786-.221-.08-.382-.12-.543.121-.16.242-.623.786-.764.947-.14.161-.281.181-.523.06-.242-.12-1.022-.376-1.946-1.196-.719-.64-1.204-1.43-1.345-1.671-.14-.242-.015-.373.106-.493.108-.108.242-.282.362-.423.121-.14.161-.24.242-.402.08-.16.04-.302-.02-.423-.06-.12-.543-1.308-.744-1.791-.196-.471-.395-.407-.543-.414l-.462-.008c-.161 0-.423.06-.644.302-.222.242-.845.825-.845 2.012s.865 2.332.985 2.493c.12.16 1.701 2.596 4.122 3.641.576.249 1.025.397 1.375.508.577.184 1.103.158 1.519.096.463-.069 1.43-.584 1.631-1.148.2-.563.2-1.046.14-1.147-.06-.1-.221-.161-.463-.282z"/>
           </svg>
         </button>
         <button class="icon-btn" onclick="shareList()" title="שתף רשימה">📤</button>
@@ -830,6 +835,7 @@ let searchResults = [];
 let browseView = 'cats';   // 'cats' | 'products'
 let browseCat = '';
 let browseFilterVal = '';
+let browseQtyIdx = -1;     // index of product with open qty picker
 
 // Qty inline edit state
 let editingQtyId = null;
@@ -1037,6 +1043,7 @@ function browseCatBack() {
   browseView = 'cats';
   browseCat = '';
   browseFilterVal = '';
+  browseQtyIdx = -1;
   document.getElementById('bFilter').value = '';
   renderBrowse();
 }
@@ -1045,6 +1052,7 @@ function selectBrowseCat(cat) {
   browseView = 'products';
   browseCat = cat;
   browseFilterVal = '';
+  browseQtyIdx = -1;
   document.getElementById('bFilter').value = '';
   renderBrowse();
 }
@@ -1100,34 +1108,71 @@ function renderBrowseProducts() {
     Object.values(items).filter(i => !i.purchased).map(i => i.name)
   );
 
+  const UNIT_OPTS = ["יח'", 'ק"ג', 'גרם', 'ליטר', 'מ"ל', 'חבילה', 'צרור', 'קרטון'];
+
   body.innerHTML = filtered.map((name, idx) => {
     const added = inListNames.has(name);
+    const isOpen = browseQtyIdx === idx;
     const btn = added
       ? `<button class="bprod-add added" disabled title="כבר ברשימה">✓</button>`
-      : `<button class="bprod-add" onclick="browseAdd(${idx})" title="הוסף לרשימה">+</button>`;
+      : isOpen
+        ? `<button class="bprod-add" onclick="browseQtyCancel(event)" title="בטל" style="font-size:0.8rem">✕</button>`
+        : `<button class="bprod-add" onclick="browseQtyOpen(${idx},event)" title="הוסף לרשימה">+</button>`;
     const imgUrl = prodImgUrl(name, browseCat);
     const photoEl = imgUrl
       ? `<img class="item-photo" src="${hEsc(imgUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">`
       : (prodEmoji(name) ? `<span class="item-emoji" style="font-size:1.3rem">${prodEmoji(name)}</span>` : '');
+    const qtyRow = isOpen ? `
+      <div class="bprod-qty-row">
+        <input class="bprod-qty-num" id="bqn-${idx}" type="number" min="0" step="0.1" placeholder="כמות" onclick="event.stopPropagation()">
+        <select class="bprod-qty-unit" id="bqu-${idx}" onclick="event.stopPropagation()">
+          ${UNIT_OPTS.map(u => `<option value="${u}">${u}</option>`).join('')}
+        </select>
+        <button class="bprod-qty-confirm" onclick="browseQtyConfirm(${idx},event)">הוסף ✓</button>
+        <button class="bprod-qty-cancel" onclick="browseQtyCancel(event)">ביטול</button>
+      </div>` : '';
     return `<div class="bprod-item">
       ${btn}
       ${photoEl}
       <span class="bprod-name">${hEsc(name)}</span>
+      ${qtyRow}
     </div>`;
   }).join('');
+
+  if (browseQtyIdx >= 0) {
+    const inp = document.getElementById('bqn-' + browseQtyIdx);
+    if (inp) setTimeout(() => inp.focus(), 60);
+  }
 }
 
-function browseAdd(idx) {
+function browseQtyOpen(idx, e) {
+  e && e.stopPropagation();
+  browseQtyIdx = idx;
+  renderBrowseProducts();
+}
+
+function browseQtyCancel(e) {
+  e && e.stopPropagation();
+  browseQtyIdx = -1;
+  renderBrowseProducts();
+}
+
+function browseQtyConfirm(idx, e) {
+  e && e.stopPropagation();
   const prods = DB[browseCat] || [];
   const filtered = browseFilterVal ? prods.filter(p => p.includes(browseFilterVal)) : prods;
   const name = filtered[idx];
   if (!name) return;
-  // Guard: don't add if already in active list
   const alreadyIn = Object.values(items).some(i => !i.purchased && i.name === name);
-  if (alreadyIn) { toast('⚠️ ' + name + ' כבר ברשימה'); renderBrowseProducts(); return; }
-  addItem({ name, cat: browseCat });
-  toast('✅ ' + name + ' נוסף');
-  renderBrowseProducts(); // refresh to show ✓
+  if (alreadyIn) { toast('⚠️ ' + name + ' כבר ברשימה'); browseQtyIdx = -1; renderBrowseProducts(); return; }
+  const numEl  = document.getElementById('bqn-' + idx);
+  const unitEl = document.getElementById('bqu-' + idx);
+  const qtyN = numEl ? numEl.value.trim() : '';
+  const qtyU = unitEl ? unitEl.value : "יח'";
+  addItem({ name, cat: browseCat, qtyN, qtyU: qtyN ? qtyU : '' });
+  toast('✅ ' + name + (qtyN ? ' — ' + qtyN + ' ' + qtyU : '') + ' נוסף');
+  browseQtyIdx = -1;
+  renderBrowseProducts();
 }
 
 // ============================================================

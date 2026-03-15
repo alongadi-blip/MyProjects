@@ -1,0 +1,67 @@
+[
+  {
+    "name": "נעלי רוקפורט גברים",
+    "keywords": [
+      "rockport",
+      "רוקפורט"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "משחת שיניים קולגייט",
+    "keywords": [
+      "colgate",
+      "קולגייט"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "מנורת ציפור",
+    "keywords": [
+      "מנורת ציפור"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "Nautica",
+    "keywords": [
+      "Nautica"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "גרביים",
+    "keywords": [
+      "גרביים"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "Ninja",
+    "keywords": [
+      "Ninja"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "Fossil",
+    "keywords": [
+      "Fossil"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "Gant",
+    "keywords": [
+      "Gant"
+    ],
+    "exclude_keywords": []
+  },
+  {
+    "name": "Samsonite",
+    "keywords": [
+      "Samsonite"
+    ],
+    "exclude_keywords": []
+  }
+]
